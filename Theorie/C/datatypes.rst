@@ -266,6 +266,8 @@ erroné peut avoir des conséquences énormes [Bashar1997]_.
 Nombres réels
 -------------
 
+.. TODO link vers le blog https://ciechanow.ski/exposing-floating-point/
+
 Outre les nombres entiers, les systèmes informatiques doivent aussi
 pouvoir manipuler des nombres réels. Ceux-ci sont également
 représentés sous la forme d'une séquence fixe de bits. Il existe deux formes de représentation pour les nombres réels :
