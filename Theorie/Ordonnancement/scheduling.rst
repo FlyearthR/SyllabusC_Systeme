@@ -155,7 +155,7 @@ Une première approche est d'exécuter les CPU bursts des threads dans l'ordre e
 Ce scheduler n'étant pas préemptif, chaque CPU burst s'exécute intégralement avant de libérer le processeur pour un autre thread.
 Le temps de réponse avec un scheduler non préemptif est toujours égal au temps d'attente plus la durée du burst CPU, donc nous nous intéresserons principalement à ce premier critère.
 
-L'exemple ci-dessous montre deux exécutions possibles pour 4 threads disponibles en état Ready simultanément, mais pour lesquels l'ordre d'ajout en état Ready a été effectué dans un ordre différent (T1, T2, T3, puis T4 dans un premier cas; et T2, T3, T4 puis T1 dans le deuxième cas).
+L'exemple ci-dessous montre deux exécutions possibles pour 4 threads disponibles en état Ready simultanément, mais pour lesquels l'ordre d'ajout en état Ready a été effectué dans un ordre différent (T1, T2, T3, puis T4 dans un premier cas; et T3, T2, T1 puis T4 dans le deuxième cas).
 
  .. figure:: figures/scheduler_fcfs.png
     :align: center
@@ -164,7 +164,7 @@ L'exemple ci-dessous montre deux exécutions possibles pour 4 threads disponible
 Ces figures présentent des diagrammes de Gantt, où le temps d'exécution de chaque CPU burst est représenté au cours du temps.
 En terme de débit applicatif et d'utilisation du processeur, cet algorithme est optimal, car il n'y a que trois changements de contexte : le temps perdu pour ces changements de contexte est donc minimal.
 
-En revanche, si on considère le temps d'attente moyen pour chacun des threads, on observe que celui-ci diffère grandement entre le premier ordre d'arrivée et le second (de 7 unités de temps à 4.75 unités de temps).
+En revanche, si on considère le temps d'attente moyen pour chacun des threads, on observe que celui-ci diffère grandement entre le premier ordre d'arrivée et le second (de 7 unités de temps à 5 unités de temps).
 La raison est que dans la première configuration des CPU bursts courts (typiques des applications interactives ou utilisant de nombreuses entrées/sorties) se retrouvent *coincées* derrière un CPU burst long.
 Ce phénomène est appelé l'*effet convoi* (convoy effect en anglais).
 Il pénalise principalement les applications ayant des besoins d'interactivité.
@@ -180,7 +180,7 @@ La figure ci-dessous montre le diagramme de Gantt où les threads obtiennent le 
     :align: center
     :scale: 20
 
-On peut facilement montrer que le temps d'attente *moyen* avec le scheduler SJF est le meilleur possible : toute permutation d'ordre ne peut qu'augmenter ce temps d'attente moyen.
+On peut facilement montrer que le temps d'attente *moyen* avec le scheduler SJF est le meilleur possible, 4.25 unités de temps dans ce cas : toute permutation d'ordre ne peut qu'augmenter ce temps d'attente moyen.
 Toutefois, cet algorithme n'est pas réalisable en pratique et ne peut donc servir que de mètre étalon pour analyser la performance d'autres algorithmes.
 Il n'est en effet pas possible de connaître à l'avance la durée d'un CPU burst, car celle-ci dépend de l'exécution du code du thread, et donc de ses boucles, conditionnelles, appels de fonctions, etc.
 
