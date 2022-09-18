@@ -4,7 +4,7 @@ Systèmes Informatiques
 [![Build Status](https://travis-ci.com/UCL-INGI/SyllabusC.svg?branch=master)](https://travis-ci.com/UCL-INGI/SyllabusC)
 
 
-Ce repository git est destiné à contenir les notes et exercices du cours de [Projet3](https://uclouvain.be/cours-2019-lepl1503) (C, Unix/Linux, ...) donné en deuxième année aux étudiants ingénieurs civils et aux étudiants en sciences informatiques de l'[UCL](https://www.uclouvain.be). Il sera mis régulièrement à jour et les étudiants sont encouragés à soumettre des bugs reports, envoyer des patches ( notamment pour la section relative aux outils) ou proposer de nouvelles questions à choix multiples.
+Ce repository git est destiné à contenir les notes et exercices du cours de [Projet3](https://uclouvain.be/cours-2019-lepl1503) donné en deuxième année aux étudiants ingénieurs civils et aux étudiants en sciences informatiques de l'[UCL](https://www.uclouvain.be), et du cours de [Systèmes Informatiques](https://uclouvain.be/cours-2022-linfo1252) donné en troisième année. Il sera mis régulièrement à jour et les étudiants sont encouragés à soumettre des bugs reports, envoyer des patches ( notamment pour la section relative aux outils) ou proposer de nouvelles questions à choix multiples.
 
 Ce cours est écrit en restructured text et est distribué sous une licence creative commons
 https://creativecommons.org/licenses/by-sa/3.0/fr/
