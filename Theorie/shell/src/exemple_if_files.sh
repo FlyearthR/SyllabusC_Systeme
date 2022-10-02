@@ -15,5 +15,5 @@ fi
 if [ -s $1 ]; then
     echo "Le fichier $1 contient des données" > /dev/stdout
 else
-	echo "Le fichier $1 ne contient pas de données" > /dev/stdout
+    echo "Le fichier $1 ne contient pas de données" > /dev/stdout
 fi

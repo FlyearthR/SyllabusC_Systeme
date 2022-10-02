@@ -15,17 +15,22 @@ Lors de l'exécution d'un programme, le système d'exploitation charge depuis le
    Organisation d'un programme Linux en mémoire
 
 
-La figure ci-dessus présente une vision schématique de la façon dont un processus Linux est organisé en mémoire centrale. Il y a d'abord une partie de la mémoire qui est réservée au système d'exploitation (OS dans la figure). Cette zone est représentée en gris dans la figure.
+La figure ci-dessus présente une vision schématique de la façon dont un processus Linux est organisé en mémoire centrale. Il y a d'abord une partie de la mémoire qui est réservée au système d'exploitation. Cette zone est représentée en gris dans la figure et dénotée OS (*Operating System*).
 
 Le segment text
 ---------------
 
-La première zone est appelée par convention le :term:`segment text`. Cette zone se situe dans la partie basse de la mémoire [#fetext]_. C'est dans cette zone que sont stockées toutes les instructions qui sont exécutées par le processeur. Elle est généralement considérée par le système d'exploitation comme étant uniquement accessible en lecture. Si un programme tente de modifier son :term:`segment text`, cela générera une interruption pour violation de droits par le processeur et le programme sera immédiatement interrompu par le système d'exploitation. C'est dans le segment text que l'on retrouvera les instructions de langage machine correspondant aux fonctions de calcul et d'affichage du programme. Nous en reparlerons lorsque nous présenterons le fonctionnement du langage d'assemblage.
+La première zone est appelée par convention le :term:`segment text`. Cette zone se situe dans la partie basse de la mémoire [#fetext]_. C'est dans cette zone que sont stockées toutes les instructions qui sont exécutées par le processeur. Elle est généralement considérée par le système d'exploitation comme étant uniquement accessible en lecture. Si un programme tente de modifier son :term:`segment text`, cela générera une interruption pour violation de droits par le processeur. Cette interruption redonne alors le contrôle au système d'exploitation, qui décidera généralement d'interrompre le programme et d'afficher un message d'erreur.
 
-Le segment des données initialisées
------------------------------------
+.. C'est dans le segment text que l'on retrouvera les instructions de langage machine correspondant aux fonctions de calcul et d'affichage du programme. Nous en reparlerons lorsque nous présenterons le fonctionnement du langage d'assemblage.
 
-La deuxième zone, baptisée :term:`segment des données initialisées`, contient l'ensemble des données et chaînes de caractères qui sont utilisées dans le programme. Ce segment contient deux types de données. Tout d'abord, il comprend l'ensemble des variables globales explicitement initialisées par le programme. Ces variables globales peuvent être par exemple des constantes et des chaînes de caractères utilisées par le programme.
+Les segments de données initialisées et non initialisées
+--------------------------------------------------------
+
+Les deuxièmes et troisièmes zones, baptisées :term:`segment des données initialisées` et :term:`segment des données non-initialisées`, contiennent l'ensemble des variables et chaînes de caractères globales qui sont utilisées dans le programme.
+
+Le compilateur utilise deux zones distinctes pour stocker ces variables et chaînes de caractères globales, selon qu'elles soient ou non initialisées lors de la phase de compilation (i.e., leur type et nom sont déclarés mais il est, ou il n'est pas, fourni de valeur initiale).
+Considérons le programme suivant.
 
 .. literalinclude:: /C/S3-src/dataseg.c
    :encoding: utf-8
@@ -33,26 +38,26 @@ La deuxième zone, baptisée :term:`segment des données initialisées`, contien
    :start-after: ///AAA
    :end-before: ///BBB
 
-Dans le programme ci-dessus, la variable ``g_init``, la constante ``un`` et les tableaux ``tab`` et ``cours`` sont dans la zone réservée aux variables initialisées. En pratique, leur valeur d'initialisation sera chargée depuis le fichier exécutable lors de son chargement en mémoire. Il en va de même pour toutes les chaînes de caractères qui sont utilisées comme arguments aux appels à ``printf(3)``.
+Dans le programme ci-dessus, la variable ``g_init``, la constante ``un`` et les tableaux ``tab`` et ``cours`` sont dans la zone réservée aux variables initialisées.
+En pratique, leur valeur d'initialisation sera chargée depuis le fichier exécutable lors de son chargement en mémoire.
+Il en va de même pour toutes les chaînes de caractères qui sont utilisées comme arguments aux appels à ``printf(3)``.
+
+Les variables ``g`` et les tableaux ``array`` et ``msg`` sont, quand à eux, stockés dans la zone de mémoire non initialisée.
 
 L'exécution de ce programme produit la sortie standard suivante.
+Cette sortie illustre bien les adresses où les variables globales sont stockées.
 
 .. literalinclude:: /C/S3-src/dataseg.out
    :encoding: utf-8
    :language: console
 
-Cette sortie illustre bien les adresses où les variables globales sont stockées.
-
-Le segment des données non-initialisées
----------------------------------------
-
-La troisième zone est le :term:`segment des données non-initialisées`, réservée aux variables non-initialisées. Dans l'exemple ci-dessus, c'est dans cette zone que l'on stockera les valeurs de la variable ``g`` et des tableaux ``array`` et ``msg``. En pratique, cette zone mémoire est initialisée à zéro par le compilateur, mais il est important de comprendre que ce n'est pas le cas de toutes les variables comme l'explique la note suivante.
+En pratique, la zone de mémoire non initialisée est initialisée à zéro par le compilateur, mais il est important de comprendre que ce n'est pas le cas de toutes les variables comme l'explique la note suivante.
 
 .. note:: Initialisation des variables
 
  Un point important auquel tout programmeur C doit faire attention est l'initialisation correcte de l'ensemble des variables utilisées dans un programme. Le compilateur C est nettement plus permissif qu'un compilateur Java et il autorisera l'utilisation de variables avant qu'elles n'aient été explicitement initialisées, ce qui peut donner lieu à des erreurs parfois très difficiles à corriger.
 
- En C, par défaut les variables globales qui ne sont pas explicitement initialisées dans un programme sont initialisées à la valeur zéro par le compilateur. Plus précisément, la zone mémoire qui correspond à chaque variable globale non-explicitement initialisée contiendra des bits valant 0. Pour les variables locales en revanche, le langage C n'impose aucune initialisation par défaut au compilateur. Par souci de performance et sachant qu'un programmeur ne devrait jamais utiliser de variable locale non explicitement initialisée, le compilateur C n'initialise pas par défaut la valeur de ces variables. Cela peut avoir des conséquences ennuyeuses comme le montre l'exemple ci-dessous.
+ En C, par défaut les variables *globales* qui ne sont pas explicitement initialisées dans un programme sont initialisées à la valeur zéro par le compilateur. Plus précisément, la zone mémoire qui correspond à chaque variable globale non-explicitement initialisée contiendra des bits valant 0. Pour les variables *locales* en revanche, le langage C n'impose aucune initialisation par défaut au compilateur. Par souci de performance et sachant qu'un programmeur ne devrait jamais utiliser de variable locale non explicitement initialisée, le compilateur C n'initialise pas par défaut la valeur de ces variables. Cela peut avoir des conséquences ennuyeuses comme le montre l'exemple ci-dessous.
 
  .. literalinclude:: /C/S3-src/initvar.c
     :encoding: utf-8
@@ -60,7 +65,7 @@ La troisième zone est le :term:`segment des données non-initialisées`, réser
     :start-after: ///AAA
     :end-before: ///BBB
 
- Cet extrait de programme contient deux fonctions erronées. La seconde, baptisée ``read(void)`` déclare un tableau local et retourne la somme des éléments de ce tableau sans l'initialiser. En Java, une telle utilisation d'un tableau non-initialisé serait détectée par le compilateur. En C, elle est malheureusement valide (mais fortement découragée évidemment). La première fonction, ``init(void)`` se contente d'initialiser un tableau local mais ne retourne aucun résultat. Cette fonction ne sert a priori à rien puisqu'elle n'a aucun effet sur les variables globales et ne retourne aucun résultat. L'exécution de ces fonctions via le fragment de code ci-dessous donne cependant un résultat interpellant que nous serons en mesure d'expliquer un peu plus tard dans ce chapitre.
+ Cet extrait de programme contient deux fonctions erronées. La seconde, baptisée ``read(void)`` déclare un tableau local et retourne la somme des éléments de ce tableau sans l'initialiser. En Java, une telle utilisation d'un tableau non-initialisé serait détectée par le compilateur. En C, elle est malheureusement autorisée. La première fonction, ``init(void)`` se contente d'initialiser un tableau local mais ne retourne aucun résultat. Cette fonction ne sert a priori à rien puisqu'elle n'a aucun effet sur les variables globales et ne retourne aucun résultat. L'exécution de ces fonctions via le fragment de code ci-dessous donne cependant un résultat interpellant que nous serons en mesure d'expliquer un peu plus tard dans ce chapitre.
 
  .. literalinclude:: /C/S3-src/initvar.c
     :encoding: utf-8
@@ -73,18 +78,16 @@ La troisième zone est le :term:`segment des données non-initialisées`, réser
     :language: console
 
 
-
-
 Le tas (ou `heap`)
 ------------------
 
 La quatrième zone de la mémoire est le :term:`tas` (ou :term:`heap` en anglais). Vu l'importance pratique de la terminologie anglaise, c'est celle-ci que nous utiliserons dans le cadre de ce document. C'est une des deux zones dans laquelle un programme peut obtenir de la mémoire supplémentaire lors de son exécution pour y stocker de l'information. Un programme peut y réserver une zone permettant de stocker des données et y associer un pointeur.
 
-Le système d'exploitation mémorise, pour chaque processus en cours d'exécution, la limite supérieure de son :term:`heap`. Le système d'exploitation permet à un processus de modifier la taille de son heap via les appels systèmes `brk(2)`_  et `sbrk(2)`_. Malheureusement, ces deux appels systèmes se contentent de modifier la limite supérieure du :term:`heap` sans fournir une API permettant au processus d'y allouer efficacement des blocs de mémoire. Rares sont les processus qui utilisent directement `brk(2)`_  si ce n'est sous la forme d'un appel à ``sbrk(0)`` de façon à connaître la limite supérieure actuelle du :term:`heap`.
+Le système d'exploitation mémorise, pour chaque processus en cours d'exécution, la limite supérieure de son :term:`heap`. Le système d'exploitation permet à un processus de modifier la taille de son heap via les appels systèmes `brk(2)`_  et `sbrk(2)`_. Toutefois, ces deux appels systèmes se contentent de modifier la limite supérieure du :term:`heap` sans fournir une API permettant au processus d'y allouer efficacement des blocs de mémoire. Rares sont les processus qui utilisent directement `brk(2)`_  si ce n'est sous la forme d'un appel à ``sbrk(0)`` de façon à connaître la limite supérieure actuelle du :term:`heap`.
 
 En C, la plupart des processus allouent et libèrent de la mémoire en utilisant les fonctions `malloc(3)`_ et `free(3)`_ qui font partie de la librairie standard.
 
-La fonction `malloc(3)`_ prend comme argument la taille (en bytes) de la zone mémoire à allouer. La signature de la fonction `malloc(3)`_ demande que cette taille soit de type ``size_t``, c'est-à-dire le type retourné par l'expression ``sizeof``. Il est important de toujours utiliser ``sizeof`` lors du calcul de la taille d'une zone mémoire à allouer. `malloc(3)`_ retourne normalement un pointeur de type ``(void *)``. Ce type de pointeur permet de stocker l'adresse mémoire d'une zone (i.e. le premier octet de cette zone) sans y associer un type spécifique. En pratique, un programme va généralement utiliser `malloc(3)`_ pour allouer de la mémoire pour stocker différents types de données et le pointeur retourné par `malloc(3)`_ sera `casté` dans un pointeur du bon type. Cette opération se réalise en indiquant entre parenthèses le type du pointeur souhaité avant l'appel à malloc, par exemple :
+La fonction `malloc(3)`_ prend comme argument la taille (en octets/bytes) de la zone mémoire à allouer. La signature de la fonction `malloc(3)`_ demande que cette taille soit de type ``size_t``, qui est le type retourné par l'expression ``sizeof``. Il est en effet important de toujours utiliser ``sizeof`` lors du calcul de la taille d'une zone mémoire à allouer. `malloc(3)`_ retourne normalement un pointeur de type ``(void *)``. Ce type de pointeur permet de stocker l'adresse mémoire d'une zone (i.e. le premier octet de cette zone) sans y associer un type spécifique. En pratique, un programme va généralement utiliser `malloc(3)`_ pour allouer de la mémoire pour stocker différents types de données et le pointeur retourné par `malloc(3)`_ sera `casté` dans un pointeur du bon type. Cette opération se réalise en indiquant entre parenthèses le type du pointeur souhaité avant l'appel à malloc, par exemple :
 
 .. code-block:: c
 
@@ -96,7 +99,7 @@ La fonction `malloc(3)`_ prend comme argument la taille (en bytes) de la zone m�
 
 .. note:: ``typecast`` en langage C
 
- Comme le langage Java, le langage C supporte des conversions implicites et explicites entre les différents types de données. Ces conversions sont possibles entre les types primitifs et les pointeurs. Nous les rencontrerons régulièrement, par exemple lorsqu'il faut récupérer un pointeur alloué par `malloc(3)`_ ou le résultat de ``sizeof``. Contrairement au compilateur Java, le compilateur C n'émet pas toujours de message de :term:`warning` lors de l'utilisation de  typecast qui risque d'engendrer une perte de précision. Ce problème est illustré par l'exemple suivant avec les nombres.
+ Comme le langage Java, le langage C supporte des conversions implicites et explicites entre les différents types de données. Ces conversions sont possibles entre les types primitifs et les pointeurs. Nous les rencontrerons régulièrement, par exemple lorsqu'il faut récupérer un pointeur alloué par `malloc(3)`_ ou le résultat de ``sizeof``. Contrairement au compilateur Java, le compilateur C n'émet pas toujours de message de :term:`warning` lors de l'utilisation de typecast qui risque d'engendrer une perte de précision. Ce problème est illustré par l'exemple suivant avec les nombres.
 
   .. literalinclude:: /C/S3-src/typecast.c
      :encoding: utf-8
@@ -104,8 +107,7 @@ La fonction `malloc(3)`_ prend comme argument la taille (en bytes) de la zone m�
      :start-after: ///AAA
      :end-before: ///BBB
 
-
-La fonction de la librairie `free(3)`_ est le pendant de `malloc(3)`_. Elle permet de libérer la mémoire qui a été allouée par `malloc(3)`_. Elle prend comme argument un pointeur dont la valeur a été initialisée par `malloc(3)`_ et libère la zone mémoire qui avait été allouée par `malloc(3)`_ pour ce pointeur. La valeur du pointeur n'est pas modifiée, mais après libération de la mémoire il n'est évidemment plus possible [#fpossible]_ d'accéder aux données qui étaient stockées dans cette zone.
+La fonction de la librairie `free(3)`_ est le pendant de `malloc(3)`_. Elle permet de libérer la mémoire qui a été allouée par `malloc(3)`_. Elle prend comme argument un pointeur dont la valeur a été initialisée par `malloc(3)`_ et libère la zone mémoire qui avait été allouée par `malloc(3)`_ pour laquelle cette adresse avait été retournée. La valeur du pointeur (i.e. l'adresse qu'il stocke) n'est pas modifiée, mais après libération de la mémoire il n'est évidemment plus possible [#fpossible]_ d'accéder aux données qui étaient stockées dans cette zone.
 
 Le programme ci-dessous illustre l'utilisation de `malloc(3)`_ et `free(3)`_.
 
@@ -162,7 +164,7 @@ Le tas (ou :term:`heap`) joue un rôle très important dans les programmes C. Le
 
 .. note:: Ne comptez jamais sur les `free(3)`_ implicites
 
- Un programmeur débutant qui expérimente avec `malloc(3)`_ pourrait écrire le code ci-dessous et conclure que comme celui-ci s'exécute correctement, il n'est pas nécessaire d'utiliser `free(3)`_. Lors de l'exécution d'un programme, le système d'exploitation réserve de la mémoire pour les différents segments du programme et ajuste si nécessaire cette allocation durant l'exécution du programme. Lorsque le programme se termine, via ``return`` dans la fonction ``main`` ou par un appel explicite à `exit(2)`_, le système d'exploitation libère tous les segments utilisés par le programme, le text, les données, le tas et la pile. Cela implique que le système d'exploitation effectue un appel implicite à `free(3)`_ à la terminaison d'un programme.
+ Un programmeur débutant qui expérimente avec `malloc(3)`_ pourrait écrire le code ci-dessous et conclure que comme celui-ci s'exécute correctement, il n'est pas nécessaire d'utiliser `free(3)`_. Lors de l'exécution d'un programme, le système d'exploitation réserve de la mémoire pour les différents segments du programme. Cette quantité de mémoire est ajustée pendant l'exécution du programme, par exemple par des appels à `brk(2)`_  et `sbrk(2)`_ au sein de la mise en œuvre de `malloc(3)`_. Lorsque le programme se termine, via ``return`` dans la fonction ``main`` ou par un appel explicite à `exit(2)`_, le système d'exploitation libère tous les segments utilisés par le programme, le text, les données, le tas et la pile. Cela peut être vu comme si le système d'exploitation effectuait un appel implicite à `free(3)`_ à la terminaison d'un programme, pour toutes les zones réservées.
 
  .. literalinclude:: /C/S3-src/nofree.c
     :encoding: utf-8
@@ -230,7 +232,7 @@ Lors de l'exécution de la fonction ``compute()``, le programme ci-dessus produi
    :language: console
    :start-after: ///FACT
 
-Il est intéressant d'analyser en détails ce calcul récursif de la factorielle car il illustre bien le fonctionnement du stack et son utilisation.
+Il est intéressant d'analyser en détail ce calcul récursif de la factorielle car il illustre bien le fonctionnement de la stack et son utilisation.
 
 Tout d'abord, il faut noter que les fonctions ``fact`` et ``times`` se trouvent, comme toutes les fonctions définies dans le programme, à l'intérieur du :term:`segment text`. La variable ``nombre`` quant à elle se trouve sur la pile en haut de la mémoire. Il s'agit d'une variable locale qui est allouée lors de l'exécution de la fonction ``compute``. Il en va de même des arguments qui sont passés aux fonctions. Ceux-ci sont également stockés sur la pile. C'est le cas par exemple de l'argument ``n`` de la fonction ``fact``. Lors de l'exécution de l'appel à ``fact(3)``, la valeur ``3`` est stockée sur la pile pour permettre à la fonction ``fact`` d'y accéder. Ces accès sont relatifs au sommet de la pile comme nous aurons l'occasion de le voir dans la présentation du langage d'assemblage. Le premier appel récursif se fait en calculant la valeur de l'argument (``2``) et en appelant la fonction. L'argument est placé sur la pile, mais à une autre adresse que celle utilisée pour ``fact(3)``. Durant son exécution, la fonction ``fact(2)`` accède à ses variables locales sur la pile sans interférer avec les variables locales de l'exécution de ``fact(3)`` qui attend le résultat de ``fact(2)``. Lorsque ``fact(2)`` fait l'appel récursif, la valeur de son argument (``1``) est placée sur la pile et l'exécution de ``fact(1)`` démarre. Celle-ci a comme environnement d'exécution le sommet de la pile qui contient la valeur ``1`` comme argument et la fonction retourne la valeur ``1`` à l'exécution de ``fact(2)`` qui l'avait lancée. Dès la fin de ``fact(1)``, ``fact(2)`` reprend son exécution où elle avait été interrompue et applique la fonction ``times`` avec ``2`` et ``1`` comme arguments. Ces deux arguments sont placés sur le pile et ``times`` peut y accéder au début de son exécution pour calculer la valeur ``2`` et retourner le résultat à la fonction qui l'a appelé, c'est-à-dire ``fact(2)``. Cette dernière retrouve son environnement d'exécution sur la pile. Elle peut maintenant retourner son résultat à la fonction ``fact(3)`` qui l'avait appelée. Celle-ci va appeler la fonction ``times`` avec ``3`` et ``2`` comme arguments et finira par retourner la valeur ``6``.
 
