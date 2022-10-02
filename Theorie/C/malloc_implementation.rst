@@ -8,7 +8,7 @@
 Gestion de mémoire dynamique
 ============================
 
-Nous avons vu dans la section précédente comment allouer et libérer de la mémoire dans le :term:`heap` (tas) en utilisant les fonctions de la librairie standard `malloc(3)`_ et `free(3)`_, ainsi que leurs dérivées.
+Nous avons vu dans la section précédente comment allouer et libérer de la mémoire dans le :term:`heap` (tas) en utilisant les fonctions de la librairie standard `malloc(3)`_ et `free(3)`_ ainsi que leurs dérivées.
 
 Pour rappel, les signatures de ces deux fonctions sont les suivantes :
 
@@ -19,14 +19,14 @@ Pour rappel, les signatures de ces deux fonctions sont les suivantes :
 
 `malloc(3)`_ renvoie un pointeur vers une zone de mémoire du :term:`heap` d'une taille *minimum* de ``size`` octets.
 `free(3)`_ permet de libérer une zone mémoire précédemment réservée indiquée par le pointeur ``ptr``.
-Cette dernière fonction a un comportement indéterminé si elle est appelée avec un pointeur ne correspondant pas à une zone mémoire réservée et non encore libérée.
+Cette dernière fonction a un comportement indéterminé si elle est appelée avec un pointeur ne correspondant pas à une zone mémoire précédemment réservée et non encore libérée.
 
 La gestion du :term:`heap` est sous la responsabilité d'un algorithme de *gestion de mémoire dynamique*.
 L'objectif de cet algorithme est double. 
 Premièrement, il doit retourner des zones réservées qui ne se chevauchent pas entre elles, et qui contiennent *au moins* le nombre d'octets demandés. 
 Deuxièmement, il doit permettre de *recycler* la mémoire des zones libérées pour pouvoir les utiliser de nouveau pour héberger de nouvelles zones réservées.
 
-Dans cette section, nous étudierons les principes et la mise en œuvre de tels algorithmes de gestion de mémoire dynamique.
+Dans cette section, nous étudierons les principes et la mise en œuvre des algorithmes de gestion de mémoire dynamique.
 
 Nous ne couvrirons pas la mise en œuvre de l'appel `realloc(3)`_ dans le cadre de ce cours.
 L'appel `calloc(3)`_ peut être mis en œuvre en utilisant `malloc(3)`_, ce qui est laissé en exercice.
@@ -58,7 +58,7 @@ La figure suivante illustre le fonctionnement de l'appel `sbrk(2)`_ pour réserv
    :align: center
    :scale: 20
 
-Les deux appels `brk(2)`_ et `sbrk(2)`_ peuvent échouer, en particulier lorsque la valeur demandée pour le *program break* résulte en un dépassement de la taille maximale autorisée pour le programme appelant.
+Les deux appels `brk(2)`_ et `sbrk(2)`_ peuvent échouer, en particulier lorsque la valeur demandée pour le *program break* résulte en un dépassement de la quantité de mémoire maximale autorisée pour ce programme.
 Cette taille maximale dépend des paramètres du système et des autorisations de l'utilisateur.
 On peut connaître ces dernières en utilisant l'utilitaire `ulimit(1posix)`_.
 
@@ -69,26 +69,33 @@ et `free(3)`_. La mise en œuvre de `malloc(3)`_ détermine ainsi quand il est n
 mise en œuvre de `free(3)`_ peut de façon similaire décider de réduire la taille du :term:`heap` en
 appelant `sbrk(2)`_ avec un argument négatif.
 
-Note : On notera que des alternatives à `sbrk(2)`_ existent pour réserver de la mémoire dynamiquement pour le :term:`heap` d'un programme, et en particulier l'appel système `mmap(2)`_ que nous couvrirons lorsque nous aborderons la mise en œuvre de la mémoire virtuelle. 
-C'est la méthode qui est désormais préférée sous Linux, même si `sbrk(2)`_ reste supporté pour assurer la compatibilité.
-Les principes de mise en œuvre de la gestion de la mémoire dynamique présentés ci-dessous sont d'application dans les deux cas.
+.. note:: Alternatives à `sbrk(2)`_
+
+ On notera que des alternatives à `sbrk(2)`_ existent pour réserver de la mémoire dynamiquement pour le :term:`heap` d'un programme, et en particulier l'appel système `mmap(2)`_ que nous couvrirons lorsque nous aborderons la mise en œuvre de la mémoire virtuelle. 
+ C'est la méthode qui est désormais préférée sous Linux, même si `sbrk(2)`_ reste supporté pour assurer la compatibilité.
+ Les principes de mise en œuvre de la gestion de la mémoire dynamique présentés ci-dessous sont d'application dans les deux cas.
 
 Contraintes
 -----------
 
-Un algorithme de gestion de mémoire dynamique obéit aux besoins et contraintes suivants :
+Un algorithme de gestion de mémoire dynamique doit prendre en compte les deux contraintes suivantes :
 
-- Il est nécessaire de conserver de l'information (des méta-données) sur les blocs alloués et libérés;
-- Le segment :term:`heap` doit être utilisé pour stocker ces méta-données. Les autres segments de la mémoire sont en effet dédiés aux données du programme lui-même (segments *text*, segments de données initialisées et non initialisées, etc.). Il n'est donc possible de stocker les méta-données utilisées par l'algorithme que dans le segment :term:`heap` lui même. Les méta-données doivent donc être *intercalées* avec les zones de mémoire allouées par l'application.
+- Il est nécessaire de conserver de l'information (des *méta-données*) sur les blocs alloués et libérés;
+- Le segment :term:`heap` lui même doit être utilisé pour stocker ces méta-données. Les autres segments de la mémoire sont en effet dédiés aux données du programme (segments *text*, segments de données initialisées et non initialisées, etc.) et leur taille est limitée. Il n'est donc possible de stocker les méta-données utilisées par l'algorithme *que* dans le segment :term:`heap` lui même.
 
-Par ailleurs, il est généralement nécessaire que les zones mémoires allouées soient *alignées*. Cela veut dire que l'adresse de début de chaque zone, ainsi que la taille de la zone, doivent être des multiples d'un *facteur d'alignement* propre au système. 
+Les méta-données doivent donc être *intercalées* avec les zones de mémoire allouées par l'application.
+
+Par ailleurs, il est généralement nécessaire que les zones mémoires allouées soient *alignées*.
+Cela veut dire que l'adresse de début de chaque zone, ainsi que la taille de la zone, doivent être des multiples d'un *facteur d'alignement* propre au système.
 Ce facteur est de 8 octets sous Linux.
-Une zone réservée sera toujours d'une taille multiple du facteur d'alignement.
-Par exemple, sous Linux, une demande pour 17 octets réservera en réalité 24 octets, le multiple de 8 supérieur le plus proche.
+Une zone réservée sera toujours d'une taille qui est un multiple du facteur d'alignement.
+Par exemple, sous Linux, une demande pour une allocation de 17 octets réservera en réalité 24 octets, qui est le multiple de 8 supérieur le plus proche.
 On appelle cette extension de la zone demandé le *padding*.
 
-L'alignement permet tout d'abord de faire des hypothèses sur les adresses retournées (les bits de poids faibles sont toujours à 0 : avec un facteur d'alignement de 8 les trois derniers bits des adresses retournées par `malloc(3)`_ valent ainsi toujours 0).
-L'alignement facilite aussi comme nous allons le voir la mise en oeuvre et l'efficacité des algorithmes de gestion de mémoire dynamique.
+L'alignement permet tout d'abord de faire des hypothèses sur les adresses retournées.
+Par exemple, avec l'alignement les bits de poids faibles des adresses retournées sont toujours à 0.
+Avec un facteur d'alignement de 8 ce sont les trois derniers bits des adresses retournées par `malloc(3)`_ qui valent ainsi toujours 0.
+L'alignement facilite aussi comme nous allons le voir la mise en oeuvre efficace des algorithmes de gestion de mémoire dynamique.
 L'exemple ci-dessous illustre l'alignement utilisé par `malloc(3)`_ sous Linux.
 
 .. literalinclude:: /C/src/malloc_align.c
@@ -114,7 +121,7 @@ Objectifs
 
 On mesure la qualité d'un algorithme de gestion de mémoire dynamique selon **trois critères** principaux.
 
-**Premièrement**, les appels aux fonctions `malloc(3)`_ et `free(3)`_ doivent idéalement s'exécuter le plus rapidement possible, et ce temps d'exécution doit varier le moins possible entre plusieurs appels. Ces fonctions sont effectivement utilisées de manière intensive par de nombreux programmes, et les appels à `malloc(3)`_ et `free(3)`_ peuvent se trouver dans des chemins de code critiques dont la performance ne doit pas varier au cours du temps ou ne doit pas varier en fonction de la quantité de données manipulées par le programme.
+**Premièrement**, les appels aux fonctions `malloc(3)`_ et `free(3)`_ doivent idéalement s'exécuter le plus rapidement possible, et ce temps d'exécution doit varier le moins possible entre plusieurs appels. Ces fonctions sont effectivement utilisées de manière intensive par de nombreux programmes, et les appels à `malloc(3)`_ et `free(3)`_ peuvent se trouver dans des chemins de code critiques dont la performance varier le moins possible au cours du temps, ou doit varier le moins possible en fonction de la quantité de données manipulées par le programme.
 
 **Deuxièmement**, l'algorithme doit utiliser la mémoire disponible de manière *efficace*. Il doit pour cela réduire la *fragmentation*. On distingue la fragmentation externe et la fragmentation interne :
 
@@ -126,16 +133,19 @@ On mesure la qualité d'un algorithme de gestion de mémoire dynamique selon **t
 
 - La fragmentation interne mesure l'espace *perdu* pour chaque allocation, qui n'est pas utilisé pour stocker des donnés. Cela inclut l'espace de *padding*, mais aussi l'espace utilisé pour stocker les métadonnées. Dans l'exemple plus haut, l'espace nécessaire pour la zone ``a`` de 1 octet demandé fait 16 octets, ce qui résulte en une fragmentation interne de 15 octets.
 
-.. note:: La défragmentation n'est pas une option
+.. note:: La *défragmentation* de la mémoire dynamique n'est pas une option
 
- On pourrait être tenté de chercher un mécanisme pour revisiter l'allocation des zones allouées dans le but de réduire la fragmentation, par exemple en décalant les blocs pour éliminer des zones vides.
- Cela n'est malheureusement pas possible dans ce contexte : les pointeurs vers les zones allouées ont déjà été retournés à l'application par `malloc(3)`_ et il n'est plus possible de les changer.
+ On pourrait être tenté de chercher un mécanisme pour revisiter l'allocation des zones allouées dans le but de réduire la fragmentation, par exemple en décalant et réorganisant les blocs pour réduire le nombre de zones vides.
+ Cela n'est malheureusement pas possible dans ce contexte : les pointeurs vers les zones allouées ont déjà été retournés à l'application par `malloc(3)`_. 
+ Il n'est plus possible de les changer !
  Il faut donc prendre en compte l'objectif de réduction de la fragmentation dès le départ, lors des appels à `malloc(3)`_ et `free(3)`_.
+ Nous verrons lors de notre étude des systèmes de fichiers, où la correspondance entre le placement des blocs de données sur le disque et l'identifiant du fichier n'est pas exposée au programme mais uniquement visible au sein du système d'exploitation, que de telles opérations de ré-organisation peuvent alors être envisagées.
 
-**Troisièmement**, les espaces mémoires réservés par des appels `malloc(3)`_ successifs doivent être idéalement proches les uns des autres. Cette propriété de *localité* est importante pour maximiser l'utilisation du cache du processeur, dont l'utilité dépend de cette notion de localité. 
-De façon générale, il est recommandé de suivre le principe : les données allouées de façon proche dans le temps doivent être proches en mémoire, et les données similaires (de même taille) doivent aussi être proches en mémoire car dans les deux cas il y a une probabilité importante qu'elles soient accédées lors du même traitement, de manière proche dans le temps.
+**Troisièmement**, les espaces mémoires réservés par des appels `malloc(3)`_ successifs doivent être idéalement proches les uns des autres.
+Cette propriété de *localité* est importante pour maximiser l'utilisation du *cache* du processeur, dont l'utilité dépend de cette notion de localité. 
+De façon générale, il est recommandé de suivre le principe suivant : les données allouées de façon proche dans le temps doivent être proches en mémoire, et les données similaires (de même taille) doivent aussi être proches en mémoire car dans les deux cas il y a une probabilité importante qu'elles soient accédées de manière proche dans le temps.
 Les principes (simplifiés) du fonctionnement d'un cache sont détaillés ci-dessous pour en comprendre les raisons.
-Nous verrons le fonctionnement du cache de manière plus poussée dans un prochain chapitre.
+Nous verrons le *fonctionnement* du cache de manière plus poussée dans un prochain chapitre.
 
 .. note:: Le principe de localité et le cache du processeur
 
@@ -147,7 +157,7 @@ Nous verrons le fonctionnement du cache de manière plus poussée dans un procha
  Elle est aussi beaucoup plus chère.
  La mémoire cache ne contient donc qu'un petit sous-ensemble des données utilisées par le programme, sous forme de lignes de cache dont la taille est généralement de quelques douzaines d'octets (par exemple, 64 octets).
  La mémoire principale n'est accédée que si l'adresse lue n'est pas déjà présente dans le cache.
- En pratique, une grande partie des accès à la mémoire est servie par le cache grâce à la localité des accès : localité temporelle (une même donnée est lue plusieurs fois dans un intervalle de temps court) et la localité spatiale (si une donnée est lue alors il y a une forte probabilité que la donnée présente dans les octets suivants le soit aussi -- par exemple lors du parcours d'une structure de données ou d'un tableau).
+ En pratique, une grande partie des accès à la mémoire est servie par le cache grâce à la localité des accès : localité temporelle (une même donnée est lue plusieurs fois dans un intervalle de temps court) et la localité spatiale (si une donnée est lue alors il y a une forte probabilité que la donnée présente dans les octets suivants le soit aussi -- par exemple lors du parcours d'un tableau).
  
  .. Afin de favoriser la localité et donc l'utilité de la mémoire cache, il est préférable que des appels à `malloc(3)`_ successifs renvoient des zones mémoires qui se jouxtent, et qui auront ainsi plus de chance d'être placées dans la même ligne de cache.
 
@@ -166,7 +176,7 @@ Un *bloc* est composé de plusieurs mots contigus.
 Pour chaque bloc, il est nécessaire de conserver des méta-données de deux types : la longueur de ce bloc, et un *drapeau* indiquant s'il s'agit d'un bloc réservé ou d'un bloc libre.
 Une méthode simple pour stocker les méta-données est de réserver un mot dédié situé avant le bloc de données proprement dit, comme l'illustre la figure ci-dessous.
 Dans cet exemple, le mot de méta-données (*header* en anglais), en jaune, augmente donc de une case l'espace nécessaire pour héberger la zone demandée de 4 blocs, en vert, donc l'adresse retournée sera ``p``.
-Ici la taille du bloc stockée dans le header sera de 5 mots (on indique 5 ici, mais c'est bien ``5*sizeof(int*)`` qui est stocké), et le bloc sera marquée comme réservée.
+Ici la taille du bloc stockée dans le header sera de 5 mots (on indique 5 ici, mais c'est bien ``5*sizeof(int*)`` qui est stocké, soit 40 octets dans ce cas ci), et le bloc sera marquée comme réservé.
 
 .. figure:: figures/malloc_imp1.png
    :align: center
@@ -174,11 +184,11 @@ Ici la taille du bloc stockée dans le header sera de 5 mots (on indique 5 ici, 
 
 .. note:: Utilisation du bit de poids faible pour stocker l'état d'un bloc
 
- On note que si la taille des blocs en octets est toujours un multiple de 2 (ce qui est le cas dans notre exemple ou chaque mot fait 8 octets ou 64 bits), alors on a l'assurance que le bit de poids faible sera de valeur 0.
+ On note que si la taille des blocs en octets est toujours un multiple de 2 (ce qui est le cas dans notre exemple ou chaque mot fait 8 octets ou 64 bits) alors on a l'assurance que le bit de poids faible sera de valeur 0.
  On peut tirer partie de cela pour stocker le drapeau indiquant s'il s'agit d'un bloc libre ou d'un bloc réservé : le bit de poids faible peut être positionné à 0 pour indiquer un bloc libre, et positionné à 1 pour indiquer un bloc réservé.
  On peut alors utiliser les opérations de manipulations de bit pour forcer à 1 ou 0 la valeur de ce bit, et un masque binaire pour lire sa valeur.
  Ainsi, si ``c`` est la valeur du compteur stockée dans le bloc on peut obtenir son état en utilisant ``c & 0x1``, forcer sa valeur à 1 en utilisant ``c = c | 0x1;`` ou enfin forcer sa valeur à 0 avec ``c = c & ~0x1;``.
- Attention toutefois, si on souhaite utiliser la valeur du compteur, il faut penser à masquer la valeur du bit de poids faible en lisant ``c & ~0x1``. 
+ Attention toutefois, si on souhaite utiliser la *valeur* du compteur, il faut penser à masquer la valeur du bit de poids faible en lisant ``c & ~0x1``. 
 
 Utilisation d'une liste implicite
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -221,7 +231,7 @@ La fonction de placement d'un nouveau bloc de taille ``len`` à l'adresse point�
      int oldsize = *h & ~0x1;              // récupère taille actuelle sans bit de poids faible
      *h = newsize | 0x1;                   // nouvelle taille avec bit de poids faible à 1
      if (newsize < oldsize)                // s'il reste de la place ...
-       *(h + newsize) = oldsize - newsize; // nouveau bloc vide avec la taille restante
+       *(h + newsize) = oldsize - newsize; // nouveau bloc vide avec la taille restante et bit de poids faible à 0
    }
 
 L'exécution de ce code est assez simple.
@@ -291,9 +301,9 @@ Il existe d'autres politiques, comme par exemple :
 
 - La politique *next fit* se comporte de la même manière que *first fit* mais démarre la recherche depuis le dernier bloc alloué. Bien entendu, si aucun bloc de taille suffisante n'est trouvé, il est nécessaire de recommencer depuis le début du heap. Cette politique a de meilleures propriétés de localité que *first fit* mais les évaluations montrent qu'elle conduit à une encore plus grande fragmentation.
 
-- La politique *best fit* cherche a répondre à une demande d'allocation avec un bloc donc la taille est la plus proche de celle demandée (juste nécessaire). Cette politique a l'avantage d'être optimale en terme de fragmentation. Toutefois, elle a deux désavantages : elle a potentiellement une mauvaise localité, les blocs libres de taille équivalente n'étant pas nécessairement proches les uns des autres, et elle nécessite un parcours complet de la liste dans tous les cas (sauf, bien sûr, si un bloc de la taille exactement demandée est trouvé).
+- La politique *best fit* cherche a répondre à une demande d'allocation avec un bloc donc la taille est la plus proche de celle demandée (juste nécessaire). Cette politique a l'avantage d'être efficace en terme de fragmentation. Toutefois, elle a deux désavantages : elle a potentiellement une mauvaise localité, les blocs libres de taille équivalente n'étant pas nécessairement proches les uns des autres, et elle nécessite un parcours complet de la liste dans tous les cas (sauf, bien sûr, si un bloc de la taille exactement demandée est trouvé).
 
-Ces politiques représentent des compromis différents entre les critères que nous avons défini plus haut : rapidité d'exécution, fragmentation de la mémoire, et localité.
+Ces politiques représentent donc des compromis différents entre les critères que nous avons défini plus haut : rapidité d'exécution, fragmentation de la mémoire, et localité.
 
 Utilisation d'une liste explicite
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -319,25 +329,26 @@ Une telle liste est illustrée par la figure suivante, qui présente seulement u
 
 .. figure:: figures/malloc_imp7.png
    :align: center
-   :scale: 20
+   :scale: 40
 
 Les blocs libres A, B et C ne sont pas liés dans cet exemple dans l'ordre de leurs adresses.
 Il est donc nécessaire de dupliquer le header de bloc vide au début et à la fin de chaque bloc comme expliqué précédemment, afin de permettre la fusion de blocs vides contigus dans les deux sens.
-L'espace mémoire supplémentaire utilisé (fragmentation interne) est le même que dans le cas d'une liste implicite avec la duplication du header : deux mots supplémentaires sont nécessaires au début et à la fin de chaque bloc alloué.
+L'espace mémoire supplémentaire utilisé (contribuant à la fragmentation interne) est le même que dans le cas d'une liste implicite avec la duplication du header : deux mots supplémentaires sont nécessaires au début et à la fin de chaque bloc alloué.
 En revanche, quatre mots sont nécessaires pour chaque bloc libre.
 Ils servent à stocker les pointeurs vers le bloc successeur et prédécesseur de chaque bloc libre.
-Cela n'a pas d'impact sur la fragmentation interne, puisque ces méta-données sont stockées dans les blocs libres.
+Cela n'a pas d'impact sur la fragmentation interne, puisque ces méta-données sont stockées dans des blocs libres.
 En revanche, la taille minimum de bloc (libre ou alloué) est désormais de 4 mots.
+
 .. Il est donc nécessaire, dans cet exemple, d'aligner les allocations de blocs pour qu'ils utilisent un multiple de 4 mots, en utilisant du *padding* si nécessaire.
 
 L'allocation d'un bloc de données avec une liste explicite suit le même principe qu'avec une liste implicite, et peut obéir à des politiques similaires.
 Il est nécessaire, bien entendu, de maintenir les propriétés de la liste doublement chaînée.
 Ceci nécessite de mettre à jour le pointeur vers le bloc successeur du bloc libre précédent le bloc alloué, et le pointeur vers le bloc prédécesseur du bloc libre suivant le bloc alloué.
-Ces opérations sont illustrés sur notre exemple dans la figure suivante, où les pointeurs en rouge représentent les pointeurs modifiés.
+Ces opérations sont illustrés sur notre exemple dans la figure suivante, où les pointeurs en rouge représentent les pointeurs modifiés suit à l'allocation du bloc B qui était précédemment libre.
 
 .. figure:: figures/malloc_imp8.png
    :align: center
-   :scale: 20
+   :scale: 40
 
 La libération d'un bloc est plus complexe qu'avec une liste implicite.
 Cela est du au fait que la liste des blocs libres ne représente pas nécessairement l'ordre des adresses de ces blocs en mémoire.
@@ -354,7 +365,7 @@ Utilisation de listes multiples
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Les mécanismes et politiques de gestion de la mémoire dynamique qui ont été présentées ne font pas de distinction entre les demandes d'allocation de blocs de petite et de grande tailles.
-Cela pose un inconvénient double.
+Cela pose deux inconvénients.
 Tout d'abord, le temps de recherche d'un bloc vide augmente linéairement avec le nombre de blocs (le nombre de blocs total pour une liste implicite, ou seulement le nombre de blocs libres pour une liste explicite).
 Par ailleurs, le temps de recherche d'un bloc vide de grande taille peut prendre un temps plus important que la recherche d'un bloc vide de petite taille.
 
