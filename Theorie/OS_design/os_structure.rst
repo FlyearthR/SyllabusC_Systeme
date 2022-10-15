@@ -29,7 +29,7 @@ De nombreux systèmes proposent une interface utilisateur graphique, comme vous 
 
 Un troisième type d'interface existe : il s'agit de l'accès en mode *batch* (ou en mode de  *traitement par lot* en français).
 Avec une telle interface, l'utilisateur n'utilise pas le système de manière interactive.
-À la place, les demandes d'exécution de programmes (incluant le nom du programme, ses arguments, et les données à utiliser en entrée) sont envoyées à un gestionnaire de traitement par lot, qui se chargera de l'exécuter plus tard, typiquement lorsque les ressources matérielles nécessaires seront disponibles et en suivant généralement une politique FIFO (premier-arrivé, premier-servi) ou par priorités.
+À la place, les demandes d'exécution de programmes (incluant le nom du programme, ses arguments, et les données à traiter) sont envoyées à un gestionnaire de traitement par lot, qui se chargera de l'exécuter plus tard, typiquement lorsque les ressources matérielles nécessaires seront disponibles et en suivant généralement une politique FIFO (premier-arrivé, premier-servi) ou par priorités.
 
 Les interfaces de traitement par lots étaient courantes sur les premiers ordinateurs ne mettant pas en œuvre le principe de temps partagé.
 L'entrée du programme et de ses données se faisant en effet manuellement.
@@ -48,7 +48,7 @@ Ce mode d'utilisation reste de nos jours très utilisé dans les centres de calc
  .. code-block:: bash
  
     at -m 0730 tomorrow
-    sort < file >outfile
+    sort < file > outfile
     EOT
 
 Services aux concepteurs d'applications
@@ -70,7 +70,7 @@ Le loader pré-assigne les différentes sections de l'espace mémoire à partir 
 Lorsqu'un processus est en cours d'exécution, le système d'exploitation peut permettre d'observer voire de contrôler celui-ci pour permettre la compréhension de son comportement et pour faciliter sa mise au point.
 
 Tout d'abord, une erreur peut survenir lors de l'exécution du programme.
-Le système d'exploitation permet alors de récupérer des informations sur l'erreur elle-même, ainsi qu'à propose de son contexte d'apparition (comme, par exemple, l'ensemble du contenu de la mémoire au moment de son occurence).
+Le système d'exploitation permet alors de récupérer des informations sur l'erreur elle-même, ainsi qu'à propos de son contexte d'apparition (comme, par exemple, l'ensemble du contenu de la mémoire au moment de son occurence).
 Des exemples d'erreurs classiques sont listées ci-dessous.
 
 - L'accès à un segment de mémoire non autorisé, si par exemple le programme essaie de lire une adresse au dessus de la limite du stack (et donc avant que celle-ci ne soit étendue avec un appel à `sbrk(2)`_), ou bien essaie de lire une adresse d'un des segments réservés du système d'exploitation au début ou à la fin de l'espace mémoire du processus, ou encore essaie d'*écrire* à une des adresses du :term:`segment text`. 
@@ -106,7 +106,7 @@ Ces services sont fournis via des abstractions facilement manipulables par un pr
  Bien que le système d'exploitation fournisse aux applications une abstraction unique pour une même classe de périphériques, ces périphériques sont de mise en œuvre matérielle variées et ne répondent pas toujours au même jeu de commandes, même lorsqu'ils ont le même objectif.
  Par exemple, un adaptateur réseau d'une marque ou d'une génération donnée pourra répondre à des commandes de contrôle qu'un autre adaptateur réseau ne supportera pas.
  Pour pallier cette hétérogénéité, le :term:`noyau` du système d'exploitation utilise des *drivers de périphériques*.
- Ces modules logiciel très bas niveau reçoivent des commandes d'entrée/sortie génériques en entrée, et les traduisent en des commandes spécifiques à un matériel donné.
+ Ces modules logiciel de très bas niveau reçoivent des commandes d'entrée/sortie génériques en entrée, et les traduisent en des commandes spécifiques à un matériel donné.
  Ils sont le plus souvent développés par l'entreprise fabriquant ce matériel, et leur mise en œuvre nécessite souvent l'utilisation du langage d'assemblage.
 
 Partage de ressources
@@ -144,7 +144,7 @@ Comme nous l'avons vu lorsque nous avons décrit le fonctionnement du langage d'
  2. Sauvegarder sur la pile l'adresse de retour
  3. Modifier le registre ``%eip`` de façon à ce que la prochaine instruction à exécuter soit celle de la fonction à exécuter
  4. La fonction récupère ses arguments (sur la pile) et réalise son calcul
- 5. La fonction sauve son résultat à un endroit (``%eax``) convenu avec la fonction appelante
+ 5. La fonction sauve son résultat à un endroit convenu avec la fonction appelante (comme le registre ``%eax`` pour le jeu d'instructions IA32)
  6. La fonction récupère l'adresse de retour sur la pile et modifie ``%eip`` de façon à retourner à la fonction appelante
 
 L'exécution d'un appel système comprend les mêmes étapes mais avec une différence importante qui est que le flux d'exécution des instructions doit passer du programme utilisateur au noyau du système d'exploitation. Pour comprendre le fonctionnement et l'exécution d'un appel système, il est utile d'analyser les six points mentionnés ci-dessus.
@@ -369,14 +369,14 @@ Enfin, l'utilisation de modules résout le problème de l'interdépendance entre
 Structure en micro-noyau (L4)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Les structures monolithiques, en couche, et utilisant des modules présentées précédemment ont toutes un défaut en commun : la quantité de code exécutée en mode protégé au sein du noyau est très importante.
+Les structures monolithiques, en couche, ou utilisant des modules que nous avons présenté précédemment ont toutes un défaut en commun : la quantité de code exécutée en mode protégé au sein du noyau est très importante.
 Ceci pose un problème de fiabilité : une fonctionnalité incorrectement mise en œuvre dans le noyau (par exemple, qui accède à des adresses mémoires incohérentes en déréférencant un pointeur mal initialisé, ou qui utilisent une instruction de contrôle du matériel mal formée) peuvent affecter l'ensemble du noyau et donc l'ensemble du système.
 Cela peut résulter en un crash complet de la machine voire, ce qui est encore moins souhaitable, en des corruptions des données ou en des fautes exploitables par des logiciels malicieux pour effectuer des opérations non autorisées (comme, par exemple, casser la propriété d'isolation).
 
 Le concept de micro-noyau est une réponse à ce problème.
 Il consiste à réduire la taille du code du noyau (et donc les fonctionnalités supportées) au strict nécessaire, et à mettre en œuvre le reste des fonctionnalités sous forme de programmes fonctionnant en espace utilisateur.
 
-Les fonctionnalités fondamentales mises en œuvre dans le micro-noyau sont généralement une gestion basique de la mémoire, la gestion des processus légers (ou threads, que nous verrons en détail dans la prochaine partie du cours), et la communication entre processus. 
+Les fonctionnalités fondamentales mises en œuvre dans le micro-noyau sont généralement une gestion basique de la mémoire, la gestion des processus légers (ou *threads*, que nous verrons en détail dans la prochaine partie du cours), et la communication entre processus. 
 Les autres fonctionnalités, y compris les drivers de périphériques, fonctionnent sous forme de processus en mode utilisateur.
 Ces processus jouent un rôle similaire aux modules décrits précédemment.
 Toutefois, puisqu'ils ne sont plus dans l'espace mémoire du noyau, ils ne peuvent plus appeler les fonctionnalités des autres services directement, en utilisant des appels de fonctions standard.
@@ -387,7 +387,7 @@ Les micro-noyaux ont un avantage majeur : le code fonctionnant en mode protégé
 Les contributions logicielles externes, comme les drivers de périphériques, peuvent contenir des erreurs ou essayer d'utiliser des instructions interdites.
 Cela ne mettra toutefois pas en cause l'intégrité du système : comme pour un processus utilisateur qui effectuerait une opération interdite, le processus contenant le driver fautif sera simplement terminé (et éventuellement relancé) mais le reste du système ne sera pas affecté.
 Le même raisonnement s'applique pour les fonctionnalités complexes, comme les systèmes de fichiers, donc la mise en œuvre peut atteindre plusieurs dizaines voire centaines de milliers de lignes de code C.
-On comprend l'importance qu'a cette isolation lorsque l'on considère, comme le montre l'étude de Chou *et al.* en 2001 [Chou2001]_ ou celle de Palix *et al.* en 2011 [Palix2011]_ que les branches `drivers` et `fs` du noyau Linux contiennent souvent jusqu'à 7 fois plus d'erreur par millier de lignes de code que les autres branches.
+On comprend l'importance qu'a cette isolation lorsque l'on considère, comme le montre l'étude de Chou *et al.* en 2001 [Chou2001]_ ou celle de Palix *et al.* en 2011 [Palix2011]_ que les branches `drivers` et `fs` du noyau Linux contiennent souvent jusqu'à 7 fois plus d'erreurs par millier de lignes de code que les autres branches.
 
 La principale raison pour laquelle le concept de micro-noyau n'est pas aussi répandu est que sa mise en œuvre efficace est particulièrement délicate.
 En particulier, le mécanisme de passage de message *via* le noyau, qui remplace l'appel direct de fonctions entre modules, est plus coûteux que ce dernier.
@@ -400,12 +400,12 @@ Lorsque Windows NT a finalement évolué vers le système Windows XP, ce dernier
 Ce n'est que quelques années plus tard, avec les premières versions de Mac OS X, et surtout avec l'amélioration des procédures d'échange de message, qu'une approche micro-noyau a pu être déployée avec succès dans un produit commercial.
 
 De nos jours, on retrouve des systèmes d'exploitation à micro-noyaux dans les systèmes embarqués critiques avec les systèmes L4 et QNX par exemple.
-Mac OS ainsi qu'iOS d'Apple sont des systèmes hybrides, combinant des fonctionnalités typiques d'un micro-noyau mais incluant des fonctionnalités qui pourraient en principe être externalisées en espace utilisateur, pour des raisons de performance.
+Mac OS ainsi qu'iOS d'Apple sont des systèmes hybrides, combinant des fonctionnalités typiques d'un micro-noyau mais incluant des fonctionnalités qui pourraient en principe être externalisées en espace utilisateur, et ceci principalement pour des raisons de performance.
 
 .. note:: Micro-noyau et logiciel formellement certifié
 
  Un système d'exploitation est un élément critique en ce qui concerne la sécurité et la sûreté de fonctionnement d'un système informatique.
- Si l'on peut parfois accepter qu'un ordinateur personnel "plante" lors de l'essai d'une version non stabilisée d'un système d'exploitation, il n'en est pas de même pour un système critique utilisé dans le domaine spatial ou le transport de passagers.
+ Si l'on peut parfois accepter qu'un ordinateur personnel "plante" lors de l'essai d'une version non stabilisée d'un système d'exploitation, il n'en est pas de même pour un système critique utilisé dans le domaine spatial ou pour le transport de passagers.
  De la même façon, un système d'exploitation peut être utilisé dans un domaine ou la protection des données est primordiale, comme par exemple sur un serveur qui hébergerait des données médicales.
  Il ne serait pas acceptable qu'un logiciel exécuté sur la même machine puisse accéder à ces données en forçant l'accès à l'espace mémoire d'un autre processus.
  
@@ -414,12 +414,12 @@ Mac OS ainsi qu'iOS d'Apple sont des systèmes hybrides, combinant des fonctionn
  Certaines études [Chou2001]_ [Palix2011]_ montrent ainsi que certains bugs ne sont corrigés que plusieurs années après leur première identification !
  
  L'utilisation d'un micro-noyau peut réduire drastiquement la quantité de lignes de code à analyser et à débogguer, mais cela n'est pas toujours suffisant.
- Récemment, des concepteurs de systèmes d'exploitation spécialisés pour les applications critiques ont entrepris de certifier de façon formelle la qualité de leurs systèmes.
+ Récemment, des concepteurs de systèmes d'exploitation spécialisés pour les applications critiques ont entrepris de certifier de façon *formelle* la qualité de leurs systèmes.
  Ce processus nécessite de spécifier les fonctionnalités du système d'exploitation, comme par exemple la totale isolation entre les espaces mémoires accessibles au différents processus, à l'aide d'un formalisme mathématique.
  Des logiciels spécialisés permettent ensuite de valider une mise en œuvre (en C) du système d'exploitation par rapport à cette spécification formelle de haut niveau.
  Cette opération est très complexe et coûteuse en ressources de calcul.
  Elle ne peut donc s'appliquer qu'à un logiciel de taille raisonnable, comme un micro-noyau.
- Le projet le plus avancé dans ce domaine est sans doute le système d'exploitation `seL4 <https://sel4.systems>`_ développé par l'université de Sidney en Australie.
+ Le projet le plus avancé dans ce domaine est sans doute le système d'exploitation `seL4 <https://sel4.systems>`_ développé principalement par l'université de Sidney en Australie.
  Si seL4 ne comporte qu'une dizaine de milliers de lignes de C et moins d'un millier de lignes d'assembleur, la preuve mathématique de sa correction représente des millions de ligne de clauses mathématiques et un travail d'une ampleur considérable.
  Il faudra sans doute quelques années avant que les mêmes pratiques se généralisent aux systèmes d'exploitation grand public.
 
