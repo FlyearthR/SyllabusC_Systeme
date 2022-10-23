@@ -7,7 +7,7 @@
 Utilisation de plusieurs threads
 ================================
 
-Les performances des microprocesseurs se sont continuellement améliorées depuis les années 1960s. Cette amélioration a été possible grâce aux progrès constants de la micro-électronique qui a permis d'assembler des microprocesseurs contenant de plus en plus de transistors sur une surface de  plus en plus réduite. La figure [#ftransistors]_ ci-dessous illustre bien cette évolution puisqu'elle représente le nombre de transistors par microprocesseur en fonction du temps.
+Les performances des microprocesseurs se sont continuellement améliorées depuis les années 1960s. Cette amélioration a été possible grâce aux progrès constant de la micro-électronique qui a permis d'assembler des microprocesseurs contenant de plus en plus de transistors sur une surface de  plus en plus réduite. La figure [#ftransistors]_ ci-dessous illustre bien cette évolution puisqu'elle représente le nombre de transistors par microprocesseur en fonction du temps.
 
 .. spelling::
 
@@ -21,16 +21,16 @@ Les performances des microprocesseurs se sont continuellement améliorées depui
    Evolution du nombre de transistors par microprocesseur
 
 
-Cette évolution avait été prédite par Gordon Moore dans les années 1960s [Stokes2008]_. Il a formulé en 1965 une hypothèse qui prédisait que le nombre de composants par puce continuerait à doubler tous les douze mois au cours de la prochaine décennie. Cette prédiction s'est avérée tout à fait réaliste. Elle est maintenant connue sous le nom de :term:`Loi de Moore` et est fréquemment utilisée pour expliquer les améliorations de performance des ordinateurs.
+Cette évolution avait été prédite par Gordon Moore dans les années 1960s [Stokes2008]_. Ce fondateur de la compagnie Intel a formulé en 1965 une hypothèse qui prédisait que le nombre de composants par puce continuerait à doubler tous les douze mois au cours de la prochaine décennie. Cette prédiction s'est avérée tout à fait réaliste. Elle est maintenant connue sous le nom de :term:`Loi de Moore` et est fréquemment utilisée pour expliquer les améliorations de performance des ordinateurs.
 
-Le fonctionnement d'un microprocesseur est régulé par une horloge. Celle-ci rythme la plupart des opérations du processeur et notamment le chargement des instructions depuis la mémoire. Pendant de nombreuses années, les performances des microprocesseurs ont fortement dépendu de leur vitesse d'horloge. Les premiers microprocesseurs avaient des fréquences d'horloge de quelques centaines de :term:`kHz`. A titre d'exemple, le processeur intel 4004 avait une horloge à 740 kHz en 1971. Aujourd'hui, les processeurs rapides dépassent la fréquence de 3 :term:`GHz`. La figure ci-dessous présente l'évolution de la fréquence d'horloge des microprocesseurs depuis les années 1970s [#fperf]_. On remarque une évolution rapide jusqu'aux environs du milieu de la dernière décennie. La barrière des 10 MHz a été franchie à la fin des années 1970s. Les 100 :term:`MHz` ont étés atteints en 1994 et le GHz aux environs de l'an 2000.
+Le fonctionnement d'un microprocesseur est régulé par une horloge. Celle-ci rythme la plupart des opérations du processeur et notamment le chargement des instructions depuis la mémoire. Pendant de nombreuses années, les performances des microprocesseurs ont fortement dépendu de leur vitesse d'horloge. Les premiers microprocesseurs avaient des fréquences d'horloge de quelques centaines de :term:`kHz`. A titre d'exemple, le processeur intel 4004 avait une horloge cadencée à 740 kHz en 1971. Aujourd'hui, les processeurs rapides dépassent la fréquence de 3 :term:`GHz`. La figure ci-dessous présente l'évolution de la fréquence d'horloge des microprocesseurs depuis les années 1970s [#fperf]_. On remarque une évolution rapide jusqu'aux environs du milieu de la dernière décennie. La barrière des 10 MHz a été franchie à la fin des années 1970s. Les 100 :term:`MHz` ont étés atteints en 1994 et le GHz aux environs de l'an 2000.
 
 .. figure:: /_static/figures/Threads/figures/figures-001-c.png
    :align: center
 
    Evolution de la vitesse d'horloge des microprocesseurs
 
-Pendant près de quarante ans, l'évolution technologique a permis une amélioration continue des performances des microprocesseurs. Cette amélioration a directement profité aux applications informatiques car elles ont pu s'exécuter plus rapidement au fur et à mesure que la vitesse d'horloge des microprocesseurs augmentait.
+Pendant près de quarante ans, l'évolution technologique a permis une amélioration continue des performances des microprocesseurs. Cette amélioration a directement profité aux applications car elles ont pu s'exécuter plus rapidement au fur et à mesure que la vitesse d'horloge des microprocesseurs augmentait.
 
 Malheureusement, vers 2005 cette croissance continue s'est arrêtée. La barrière des 3 GHz s'est avérée être une barrière très difficile à franchir d'un point de vue technologique. Aujourd'hui, les fabricants de microprocesseurs n'envisagent plus de chercher à continuer à augmenter les fréquences d'horloge des microprocesseurs.
 
@@ -56,10 +56,10 @@ Une autre façon de mesurer les performances d'un microprocesseur est de comptab
 
 .. note:: Evaluation des performances de systèmes informatiques
 
- La fréquence d'horloge d'un processeur et le nombre d'instructions qu'il est capable d'exécuter chaque seconde ne sont que quelques uns des paramètres qui influencent les performances d'un système informatique qui intègre ce processeur. Les performances globales d'un système informatique dépendent de nombreux autres facteurs comme la capacité de mémoire et ses performances, la vitesse des bus entre les différents composants, les performances des dispositifs de stockage ou des cartes réseaux. Les performances d'un système dépendront aussi fortement du type d'application utilisé. Un serveur web, un serveur de calcul scientifique et un serveur de bases de données n'auront pas les mêmes contraintes en termes de performance. L'évaluation complète des performances d'un système informatique se fait généralement en utilisant des benchmarks. Un :term:`benchmark` est un ensemble de logiciels qui reproduisent le comportement de certaines classes d'applications de façon à pouvoir tester les performances de systèmes informatiques de façon reproductible. Différents organismes publient de tels benchmarks. Le plus connu est probablement `Standard Performance Evaluation Corporation <http://www.spec.org>`_ qui publie des benchmarks et des résultats de benchmarks pour différents types de systèmes informatiques et d'applications.
+ La fréquence d'horloge d'un processeur et le nombre d'instructions qu'il est capable d'exécuter chaque seconde ne sont que quelques uns des paramètres qui influencent les performances d'un système informatique qui intègre ce processeur. Les performances globales d'un système informatique dépendent de nombreux autres facteurs comme la capacité de mémoire et ses performances, la vitesse des bus entre les différents composants, les performances des dispositifs de stockage ou des cartes réseaux. Les performances d'un système dépendront aussi fortement du type d'application utilisé. Un serveur web, un serveur de calcul scientifique et un serveur de bases de données n'auront pas les mêmes contraintes en termes de performance. L'évaluation complète des performances d'un système informatique se fait généralement en utilisant des benchmarks. Un :term:`benchmark` est un ensemble de logiciels qui reproduisent le comportement de certaines classes d'applications de façon à pouvoir tester les performances de systèmes informatiques de façon reproductible. Différents organismes publient de tels benchmarks. Le plus connu est probablement `Standard Performance Evaluation Corporation <http://www.spec.org>`_ qui publie des benchmarks et des résultats de benchmarks pour différents types de systèmes informatiques.
 
 
-Cette progression continue des performances en MIPS a été possible grâce à l'introduction de processeurs qui sont capables d'exécuter plusieurs threads d'exécution simultanément. On parle alors de processeur :term:`multi-coeurs` ou :term:`multi-threadé`.
+Cette progression continue des performances en MIPS a été possible grâce à l'introduction de processeurs qui sont capables d'exécuter plusieurs threads d'exécution simultanément. On parle alors de processeur :term:`multi-cœurs` ou :term:`multi-threadé`.
 
 
 
@@ -115,7 +115,7 @@ Pour qu'un processeur puisse exécuter cette séquence d'instructions, il faut n
  - à la mémoire contenant les instructions à exécuter
  - à la mémoire contenant les données manipulées par cette séquence d'instruction. Pour rappel, cette mémoire est divisée en plusieurs parties :
 
-    - la zone contenant les variables globales
+    - la zone de données contenant les variables globales
     - le tas 
     - la pile
 
@@ -136,14 +136,12 @@ Cette capacité d'exécuter plusieurs threads d'exécution simultanément n'est 
 
 .. note:: D'autres types de threads
 
- À côté des threads POSIX, il existe d'autres types de threads. [Gove2011]_ présente comment mettre en œuvre des threads sur différents systèmes d'exploitation. Sous Linux, NTPL [DrepperMolnar2005]_ et LinuxThreads [Leroy]_ sont deux anciennes implémentations des threads POSIX. GNU PTH [GNUPTH]_ est une librairie qui implémente les threads sans interaction directe avec le système d'exploitation. Cela permet à la librairie d'être portable sur de nombreux systèmes d'exploitation. Malheureusement, tous les threads GNU PTH d'un programme doivent s'exécuter sur le même processeur.
-
-
+ À côté des threads POSIX, il existe d'autres types de threads. [Gove2011]_ présente comment mettre en œuvre des threads sur différents systèmes d'exploitation. Sous Linux, NTPL [DrepperMolnar2005]_ et LinuxThreads [Leroy]_ sont deux anciennes mises en œuvre des threads POSIX. GNU PTH [GNUPTH]_ est une librairie qui implémente les threads sans interaction directe avec le système d'exploitation. Cela permet à la librairie d'être portable sur de nombreux systèmes d'exploitation. Malheureusement, tous les threads GNU PTH d'un programme doivent s'exécuter au sein d'un thread unique du point de vue du système d'exploitation hôte, et donc ne s'exécutent pas en simultané.
 
 Les threads POSIX
 -----------------
 
-Les threads POSIX sont supportés par la plupart des variantes de Unix. Ils sont souvent implémentés à l'intérieur d'une librairie. Sous Linux, il s'agit de la librairie `pthreads(7)`_ qui doit être explicitement compilée avec le paramètre ``-lpthread`` lorsque l'on utilise `gcc(1)`_.
+Les threads POSIX sont supportés par la plupart des variantes de Unix. Ils sont souvent mis en œuvre à l'intérieur d'une librairie. Sous Linux, il s'agit de la librairie `pthreads(7)`_ qui doit être explicitement compilée avec le paramètre ``-lpthread`` lorsque l'on utilise `gcc(1)`_.
 
 La librairie threads POSIX contient de nombreuses fonctions qui permettent de décomposer un programme en plusieurs threads d'exécution et de les gérer. Toutes ces fonctions nécessitent l'inclusion du fichier `pthread.h`_. La première fonction importante est `pthread_create(3)`_ qui permet de créer un nouveau thread d'exécution. Cette fonction prend quatre arguments et retourne une valeur entière.
 
@@ -154,8 +152,8 @@ La librairie threads POSIX contient de nombreuses fonctions qui permettent de d�
      int
      pthread_create(pthread_t *restrict thread,
                     const pthread_attr_t *restrict attr,
-		    void *(*start_routine)(void *),
-         	    void *restrict arg);
+                    void *(*start_routine)(void *),
+                    void *restrict arg);
 
 
 Le premier argument est un pointeur vers une structure de type ``pthread_t``. Cette structure est définie dans `pthread.h`_ et contient toutes les informations nécessaires à l'exécution d'un thread. Chaque thread doit disposer de sa structure de données de type ``pthread_t`` qui lui est propre.
@@ -168,7 +166,7 @@ Le quatrième argument est l'argument qui est passé à la fonction qui débute 
 
 La fonction `pthread_create(3)`_ retourne un résultat entier. Une valeur de retour non-nulle indique une erreur et ``errno`` est mise à jour.
 
-Un thread s'exécute en général pendant une certaine période de temps puis il peut retourner un résultat au thread d'exécution principal. Un thread peut retourner son résultat (de type ``void *``) de deux façons au thread qui l'a lancé. Tout d'abord, un thread qui a démarré par la fonction ``f`` se termine lorsque cette fonction exécute ``return(...)``. L'autre façon de terminer un thread d'exécution est d'appeler explicitement la fonction `pthread_exit(3)`_. Celle-ci prend un argument de type ``void *`` et le retourne au thread qui l'avait lancé.
+Un thread s'exécute en général pendant une certaine période de temps puis il peut retourner un résultat au thread d'exécution principal. Un thread peut retourner son résultat (de type ``void *``) de deux façons au thread qui l'a lancé. Tout d'abord, un thread qui a démarré par la fonction ``f`` se termine lorsque cette fonction exécute ``return(...)``. L'autre façon de terminer un thread d'exécution est d'appeler explicitement la fonction `pthread_exit(3)`_. Celle-ci prend un argument de type ``void *`` et le retourne au thread qui avait lancé celui qui se termine.
 
 Pour récupérer le résultat d'un thread d'exécution, le thread principal doit utiliser la fonction  `pthread_join(3)`_. Celle-ci prend deux arguments et retourne un entier.
 
