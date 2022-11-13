@@ -8,7 +8,7 @@
 Les processus
 =============
 
-Un système d'exploitation multitâche et multi-utilisateurs tel que Unix ou Linux permet d'exécuter de nombreux programmes simultanément. Sous Unix, les programmes sont exécutés sous la forme de :term:`processus`. Un processus peut être défini comme étant une instance de programme qui est en train d'être exécutée sur un ou plusieurs processeurs sous le contrôle d'un système d'exploitation. Un processus comprend donc un ensemble d'instructions pour le processeur, mais aussi des données qui sont stockées en mémoire et un contexte (si le processus utilise un seul thread d'exécution, plusieurs contextes sinon). En outre, le système d'exploitation maintient un certain nombre de structures de données qui sont nécessaires au bon fonctionnement du processus. Ces structures de données sont créées au démarrage du processus, mises à jour durant la vie du processus et supprimées lorsque le processus se termine.
+Un système d'exploitation multitâche et multi-utilisateurs tel que Unix ou Linux permet d'exécuter de nombreux programmes simultanément. Sous Unix, les programmes sont exécutés sous la forme de :term:`processus`. Un processus peut être défini comme étant une instance de programme qui est en train d'être exécutée sur un ou plusieurs processeurs sous le contrôle d'un système d'exploitation. Un processus comprend donc un ensemble d'instructions pour le processeur, mais aussi des données qui sont stockées en mémoire et autant de contextes que de threads utilisés par ce processus. En outre, le système d'exploitation maintient un certain nombre de structures de données qui sont nécessaires au bon fonctionnement du processus. Ces structures de données sont créées au démarrage du processus, mises à jour durant la vie du processus et supprimées lorsque le processus se termine.
 
 
 Les librairies
@@ -383,7 +383,7 @@ Pour comprendre la façon dont Unix interagit avec les interpréteurs de command
 .. code-block:: console
 
  $ ls -l a.out
- -rwxr-xr-x 1 obo stafinfo 8178 Mar 16 13:42 a.out
+ -rwxr-xr-x 1 user stafinfo 8178 Mar 16 13:42 a.out
  $ chmod -x a.out
  $ ./a.out
  -bash: ./a.out: Permission denied
@@ -391,7 +391,7 @@ Pour comprendre la façon dont Unix interagit avec les interpréteurs de command
  $ ./a.out
    exécution de a.out
  $ ls -l a.out
- -rwxr-xr-x 1 obo stafinfo 8178 Mar 16 13:42 a.out
+ -rwxr-xr-x 1 user stafinfo 8178 Mar 16 13:42 a.out
 
 
 Lorsqu'`execve(2)`_ est appelé, il vérifie d'abord ce bit de permission. Si il n'indique pas que le programme est exécutable, `execve(2)`_ retourne une erreur. Ensuite, `execve(2)`_ ouvre le fichier dont le nom a été passé comme premier argument. Par convention, le début du fichier contient une séquence d'octets ou de caractères qui indiquent le type de fichier dont il s'agit. La commande `file(1)`_ permet de tester le type d'un fichier inconnu.
@@ -446,7 +446,7 @@ Sous Unix et Linux, n'importe quel programmeur peut définir son propre interpr�
    :encoding: utf-8
    :language: bash
 
-Lors de son exécution via `execve(2)`_, l'interpréteur `tail(1)`_ va être chargé avec comme arguments ``-n +1`` et il affichera sur :term:`stdout` la ligne ``SINF1252``.
+Lors de son exécution via `execve(2)`_, l'interpréteur `tail(1)`_ va être chargé avec comme arguments ``-n +1`` et il affichera sur :term:`stdout` la ligne ``LSINC1252``.
 
 Cette facilité d'ajouter de nouveaux interpréteurs de commande est une des forces des systèmes d'exploitation de la famille Unix.
 
