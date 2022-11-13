@@ -93,7 +93,7 @@ Elle ne s'arrêtera que si la valeur de ``turn`` change.
 Or, le premier thread ne pourra changer la valeur de ``turn`` que lorsqu'il aura quitté sa section critique.
 Cette solution évite donc toute violation de la section critique.
 Malheureusement, elle ne fonctionne que si il y a une alternance stricte entre les deux threads.
-Le second s'exécute après le premier, qui lui-même s'exécute après le second, ... Cette nécessité alternance n'est évidemment pas acceptable : on souhaite que le premier thread puisse exécuter plusieurs sections critiques à la suite sans dépendre des actions du second thread.
+Le second s'exécute après le premier, qui lui-même s'exécute après le second, ... Cette nécessité d'une alternance n'est évidemment pas acceptable : on souhaite que le premier thread puisse exécuter plusieurs sections critiques à la suite sans dépendre des actions du second thread.
 
 Analysons une seconde solution.
 Celle-ci utilise un tableau ``flag`` contenant deux drapeaux, un par thread.
@@ -352,8 +352,8 @@ L'algorithme Bakery permet de résoudre le problème de l'exclusion mutuelle en 
  - Une deuxième phase (waiting) pendant laquelle le thread vérifie de façon continue si une condition est vérifiée pour entrer dans sa section critique.
  
  La garantie formelle d'équité stipule qu'un thread TA qui termine sa phase doorway avant le début de la phase doorway d'un thread TB a la garantie de pouvoir accéder à sa section mutuelle avant que TB ne puisse exécuter la sienne.
- Dans le cas où les deux phases doorway seraient concurrentes alors l'ordre d'accès à la section critique est arbitraire.
- Il existe aussi des définitions plus souples de l'équité, autorisant un nombre borné de passages de TB devant TA, mais elles dépassent le cadre de ce cours.
+ Dans le cas où les deux phases doorway seraient concurrentes alors l'ordre d'accès à la section critique est quelconque.
+ Il existe aussi des définitions plus souples de l'équité, autorisant un nombre maximal de passages de TB devant TA, mais elles dépassent le cadre de ce cours.
 
 L'algorithme Bakery utilise un principe simple, qui est proche d'une situation de la vie courante (d'où il tire son nom).
 Un thread souhaitant accéder à sa section critique obtient tout d'abord un numéro d'ordre, un peu comme la machine distribuant des tickets à l'entrée d'un magasin.
@@ -428,7 +428,7 @@ Lorsque le thread T3 avec le ticket de numéro 6 écrit ``drapeau[3]=0`` alors T
 Une solution pour pallier ce problème serait d'utiliser un mutex pour protéger l'accès au tableau ticket.
 Toutefois, cette solution pose un problème de poule et d'œuf (qui est arrivé le premier ?) : si il faut utiliser une primitive d'exclusion mutuelle pour mettre en œuvre un algorithme d'exclusion mutuelle c'est que ce deuxième n'apporte rien de plus ...
 
-Une autre solution est de se fonder sur la notion d'équité, qui permet un ordre arbitraire pour les threads qui auraient effectué leur section doorway de manière concurrente.
+Une autre solution est de se fonder sur la notion d'équité, qui permet un ordre quelconque pour les threads qui auraient effectué leur section doorway de manière concurrente.
 On peut alors fixer un tel ordre arbitrairement, et le plus simple est d'utiliser l'ordre des identifiants des threads.
 Dans notre exemple, entre T1 et T2 avec le même ticket 5, T2 est prioritaire sur T1 et ce dernier doit attendre la fin de sa section critique.
 On peut mettre en œuvre cette correction en remplaçant :
@@ -474,7 +474,7 @@ Pour cela, ils analysent le programme à compiler et peuvent supprimer des instr
 Dans le cas de l'algorithme de Peterson, le compilateur pourrait très bien considérer que la boucle ``while`` est inutile puisque les variables ``turn`` et ``flag`` ont été initialisées juste avant d'entrer dans la boucle.
 
 **(3)** La troisième raison est que sur un ordinateur multiprocesseur, chaque processeur peut réordonner les accès à la mémoire automatiquement afin d'en optimiser les performances [McKenney2005]_.
-Cela a comme conséquence que certaines lectures et écritures en mémoires peuvent se faire dans un autre ordre que celui indiqué dans le programme sur certaines architectures de processeurs.
+Cela a comme conséquence que certaines lectures et écritures en mémoires peuvent se faire dans un autre ordre que celui indiqué dans le programme.
 Si dans l'algorithme de Peterson le thread ``A`` lit la valeur de ``flag[B]`` alors que l'écriture en mémoire pour ``flag[A]`` n'a pas encore été effectuée, une violation de la section critique est possible.
 En effet, dans ce cas les deux threads peuvent tous les deux passer leur boucle ``while`` avant que la mise à jour de leur drapeau n'aie été faite effectivement en mémoire.
 
@@ -539,7 +539,7 @@ Pour sortir de section critique, il suffit d'exécuter les instructions à parti
 Pour bien comprendre le fonctionnement de cette solution, il faut analyser les instructions qui composent chaque routine en assembleur.
 La routine ``leave`` est la plus simple.
 Elle place la valeur ``0`` à l'adresse ``lock``.
-Elle utilise une instruction atomique de façon à garantir que cet accès en mémoire se fait séquentiellement [#barriere_possible]_.
+Elle utilise une instruction atomique de façon à garantir que cet accès en mémoire se fasse séquentiellement [#barriere_possible]_.
 Lorsque ``lock`` vaut ``0``, cela indique qu'aucun thread ne se trouve en section critique.
 Si ``lock`` contient la valeur ``1``, cela indique qu'un thread est actuellement dans sa section critique et qu'aucun autre thread ne peut y entrer.
 
@@ -559,8 +559,8 @@ Verrous par attente active (spinlocks)
 L'ensemble des algorithmes d'exclusion mutuelle que nous avons vu dans ce chapitre utilisent le principe de l'attente *active*.
 On les appelle des *spinlocks* en anglais, car un thread en attente, pour entrer dans sa section critique, boucle (*spin*) sur la vérification d'une condition.
 Par exemple, dans l'algorithme Bakery un thread boucle sur le parcours des deux tableaux partagés.
-Dans l'algorithme utilisant l'opération atomique ``xchgl`` ci-dessus, un thread bouclera sur la suite d'instruction entre l'adresse ``enter`` et l'instruction ``jnz``.
-L'exclusion mutuelle par attente active peut être mise en œuvre seulement en mode utilisateur.
+Dans l'algorithme utilisant l'opération atomique ``xchgl`` ci-dessus, un thread bouclera sur la suite d'instructions entre l'adresse ``enter`` et l'instruction ``jnz``.
+L'exclusion mutuelle par attente active peut être mise en œuvre en mode utilisateur.
 Elle ne nécessite pas de support spécifique du système d'exploitation.
 
 Les mutex et les sémaphores POSIX que nous avons vu dans les chapitres précédents sont eux, au contraire, mis en œuvre avec le concours du système d'exploitation.
@@ -628,7 +628,7 @@ Si le processeur 4 émet un message pour lire la valeur à l'adresse C dans notr
 
 Si deux threads sur deux processeurs différents écrivent de façon répétée à la même adresse mémoire, il y a un risque qu'ils invalident en permanence les entrées de cache de leurs processeurs respectifs.
 Imaginons qu'un thread sur le processeur 2 modifie A très souvent, et qu'un autre thread sur le processeur 4 modifie aussi A très souvent.
-Les deux processeurs vont passer leur temps à attendre que les entrées de leur cache respectifs soient invalidées.
+Les deux processeurs vont passer leur temps à attendre que les entrées de leur caches respectifs soient invalidées.
 Cela va générer un nombre important de messages sur le bus (dont la capacité est bien entendu limitée).
 On appelle ce phénomène l'effet *ping-pong* [#faux_partage]_.
 
