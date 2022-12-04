@@ -11,20 +11,20 @@ Ordonnancement (Scheduling)
 Nous avons vu dans le chapitre précédent qu'un système d'exploitation comme Linux pouvait supporter de nombreux threads (appartenant à divers processus) avec un nombre limité de (ou même un seul) processeur(s).
 Un processeur n'exécute pourtant qu'un seul thread à la fois.
 Le partage des processeurs est rendu possible par un mécanisme de *partage de temps* : le système d'exploitation peut basculer de l'utilisation d'un processeur par un thread à une utilisation par un autre thread.
-L'enchaînement rapide de l'exécution des différents threads sur les processeurs donne l'illusion à l'utilisateur que ceux-ci s'exécutent simultanément.
+L'enchaînement rapide de l'exécution des différents threads sur les processeurs donne l'illusion aux utilisateurs que ceux-ci s'exécutent simultanément.
 Le mécanisme permettant le partage de temps est le changement de contexte.
 Nous l'avons décrit dans les chapitres précédents.
 
-La mise en œuvre du partage de temps illustre bien le principe de séparation entre mécanisme et politique, un objectif important poursuivi lors de la conception d'UNIX et de Linux.
+La mise en œuvre du partage de temps illustre bien le principe de séparation entre mécanisme et politique, un objectif important poursuivi lors de la conception d'UNIX et donc de Linux.
 Le *mécanisme* de changement de contexte permet en effet d'assurer la transition entre les threads sur un ou plusieurs processeur(s), mais il ne dit pas quel thread doit être privilégié pour obtenir un processeur, ou quand un thread utilisant un processeur doit le libérer pour laisser la place à un autre thread.
 Ces décisions sont du ressort de la *politique* d'ordonnancement ou **scheduler**.
-L'avantage de séparer les décisions sur l'accès aux processeurs pour les différents threads, du mécanisme permettant d'acter ces décisions, est sa grande flexibilité.
+L'avantage de séparer les décisions sur l'accès aux processeurs pour les différents threads, du mécanisme permettant d'acter ces décisions, est la flexibilité.
 Un même mécanisme peut être utilisé avec des politiques différentes sur des systèmes aussi dissemblables qu'un super-calculateur ou une montre connectée, pour prendre des exemples de systèmes utilisant le noyau Linux.
 
 Modèle d'exécution des threads et bursts CPU
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Un thread exécute ses instructions par phases, alternant deux types d'opérations :
+Un thread exécute ses instructions par phases, alternant entre deux types d'opérations :
 
 - Lorsqu'il obtient le processeur, un burst CPU (*rafale d'utilisation du processeur* en français) pendant lequel le processeur exécute des instructions du thread de façon continue;
 - Ce burst CPU se termine par l'utilisation d'une opération bloquante, comme une demande d'entrée/sortie ou une opération de synchronisation.
@@ -69,15 +69,15 @@ Passage de l'état Running à l'état Blocked
 Le passage de l'état Running à l'état Blocked advient lors de l'exécution d'un appel système bloquant appelé par le thread.
 Cet appel système bloquant peut être, par exemple, une demande d'entrée/sortie (écrire ou lire depuis le système de fichiers) ou un appel à une primitive de synchronisation comme par exemple `pthread_mutex_lock(3posix)`_ ou `sem_wait(3posix)`_.
 Les threads en état Blocked sont associés à une structure de donnée du noyau, qui joue le rôle de *salle d'attente*.
-Certaines de ces structures d'attente n'ont d'utilité que pour un seul thread, par exemple lorsque ce thread a demandé une lecture vers le système de fichiers.
+Certaines de ces structures d'attente n'ont d'utilité que pour un seul thread, par exemple lorsque ce thread a demandé une lecture depuis le système de fichiers.
 D'autres peuvent contenir plusieurs threads en attente.
 C'est le cas, par exemple, d'une structure d'attente pour un sémaphore.
 Il peut y avoir effectivement plusieurs threads ayant appelé `sem_wait(3posix)`_ (ici T12, T4 et T10).
-Un appel à `sem_post(3posix)`_ va libérer l'un de ces threads, qui passera alors en état Ready.
+Un appel à `sem_post(3posix)`_ va libérer un de ces threads, qui passera alors en état Ready.
 
 .. note:: Pas de garantie d'ordre sur le passage de l'état Blocked à l'état Ready !
 
- De manière générale, on ne peut pas faire d'hypothèse sur l'ordre dans lequel les threads en attente dans une structure d'attente commune vont être sélectionné pour passer dans l'état Ready, lorsque la condition d'attente sera remplie.
+ De manière générale, on ne peut pas faire d'hypothèse sur l'ordre dans lequel les threads en attente dans une structure d'attente commune vont être sélectionnés pour passer dans l'état Ready, lorsque la condition d'attente sera remplie.
  Par exemple, si plusieurs threads appelent `sem_wait(3posix)`_ sur le même sémaphore S dans un ordre donné, par exemple T12, puis T4, puis T10, il n'y a pas de garantie que lors des appels à `sem_post(3posix)`_ par d'autres threads ceux-ci passent en état Ready dans ce même ordre : le premier appel à `sem_post(3posix)`_ peut tout à fait passer T4 ou T10 en mode Ready avant T12.
 
 Passage de l'état Running à l'état Ready
@@ -88,7 +88,7 @@ Un thread passe de l'état Running à l'état Ready lorsqu'il libère le process
 On observe qu'avec uniquement les mécanismes définis précédemment, un thread qui ne génère aucun appel système pourrait rester dans l'état Running indéfiniment.
 C'est le cas, par exemple, d'un thread bloqué dans une boucle infinie ne comportant pas d'appel à la librairie standard.
 Si tous les processeurs venaient à être bloqués par des threads dans cette situation, alors la machine devient inutilisable.
-Par ailleurs, sans même considérer des boucles infinies, le temps d'occupation du processeur par le thread en cours d'exécution (son CPU burst) pourrait être particulièrement long, ce qui peut être problématique lorsque d'autres threads sont sujets à des contraintes de réactivité (par exemple, la réaction aux commandes utilisateurs ou la mise à jour de la visualisation).
+Par ailleurs, sans même considérer des boucles infinies, le temps d'occupation du processeur par le thread en cours d'exécution (son CPU burst) pourrait être particulièrement long, ce qui peut être problématique lorsque d'autres threads sont sujets à des contraintes de réactivité (par exemple, dans le jeu présenté plus haut, la réaction aux commandes utilisateurs ou la mise à jour de la visualisation).
 
 .. Un thread dans l'état Running peut tout d'abord générer volontairement un appel système bloquant pour passer en état Ready, libérant de facto le processeur qu'il utilise.
 .. Il faut utiliser pour cela la fonction `pthread_yield(3)`_ qui utilise elle même l'appel système `sched_yield(2)`_.
@@ -102,7 +102,7 @@ C'est le cas de T15 sur notre exemple.
 Passage de l'état Ready à l'état Running
 """"""""""""""""""""""""""""""""""""""""
 
-La dernière transition consiste à restaurer l'état précédemment sauvegardé d'un thread en état Ready sur un processeur, et à reprendre son exécution.
+La dernière transition consiste à restaurer l'état précédemment sauvegardé d'un thread en état Ready sur un processeur, afin de reprendre son exécution.
 
 Mise en œuvre du scheduler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -128,7 +128,7 @@ Pour ce thread, le délai d'attente entre sa mise en état Ready et l'obtention 
 Pour l'application de calcul, le plus important est de pouvoir exécuter les instructions du long CPU burst avec le moins d'interruptions possibles.
 En effet, un changement de contexte est du temps perdu pour réaliser des opérations utiles (i.e., progresser dans la simulation).
 
-Par ailleurs, un thread qui est interrompu et replacé plus tard sur le processeur sera soumis à un phénomène de *cache froid* : les données qui étaient dans le cache, et donc accessibles avec un temps d'accès faible avant le changement de contexte, ont pu être remplacées par des données à des adresses différentes, utilisées par le thread qui a utilisé le processeur entre temps.
+Par ailleurs, un thread qui est interrompu et replacé plus tard sur le processeur sera soumis à un phénomène de *cache froid* : les données qui étaient dans le cache, et donc accessibles avec un temps d'accès faible avant le changement de contexte, ont pu être remplacées par des données à des adresses différentes, utilisées par le thread qui a occupé le processeur entre temps.
 Peupler de nouveau le cache avec les données nécessaire au calcul peut nécessiter de coûteux accès en mémoire principale et ralentir l'exécution.
 
 Si l'on décide de privilégier l'application de copie, il est souhaitable d'interrompre le thread de l'application de calcul, mais cela va être au détriment de ce dernier.
@@ -214,6 +214,7 @@ La figure suivante illustre ce principe avec les mêmes threads que dans les exe
 
 On observe que le thread T1 n'exécute que deux unités de temps sur les 7 de son burst CPU avant d'être préempté pour laisser la place à T2, qui laisse la place à T3 et ainsi de suite.
 Le troisième accès du thread T3 au processeur permet à ce thread de terminer son burst par une opération bloquante.
+
 .. On suppose dans cet exemple que le système d'exploitation remet l'horloge à 0 suite à la fin du thread en cours (ce n'est pas obligatoire).
 
 Le scheduler RR permet à chaque thread d'accéder au processeur équitablement : même si un thread comme T1 ou T4 a un burst CPU long, les threads avec des bursts CPU courts comme T2 ou T3 auront accès au processeur de la même manière.

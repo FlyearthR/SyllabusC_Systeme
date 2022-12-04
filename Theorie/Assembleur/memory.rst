@@ -281,7 +281,7 @@ Le quatrième mode d'adressage est le mode `indirect`. Plutôt que de spécifier
    movl (%eax), %ecx   ; place la valeur se trouvant à l'adresse qui est
                        ; dans %eax dans le registre %ecx : %ecx=0xFF
    movl 0x10, %eax     ; place la valeur se trouvant à l'adresse 0x10 dans %eax
-   movl %ecx, (%eax)   ; place le contenu de %ecx, c'est-à-dire 0xFF à l'adresse qui est contenue dans %eax (0x10)
+   movl %ecx, (%eax)   ; place le contenu de %ecx, c'est-à-dire 0xFF à l'adresse qui est contenue dans %eax (0x04)
 
 Le cinquième mode d'adressage est le mode avec une `base` et un `déplacement`. Ce mode peut être vu comme une extension du mode `indirect`. Il permet de lire en mémoire à une adresse qui est obtenue en additionnant un entier, positif ou négatif, à une adresse stockée dans un registre. Ce mode d'adressage joue un rôle important dans le fonctionnement de la pile comme nous le verrons d'ici peu.
 
