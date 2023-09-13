@@ -21,7 +21,7 @@ Signaux
 
 L'envoi et la réception de signaux est le mécanisme de communication entre processus le plus primitif sous Unix. Un :term:`signal` est une forme d'interruption logicielle [StevensRago2008]. Comme nous l'avons vu précédemment, un microprocesseur utilise les interruptions pour permettre au système d'exploitation de réagir aux événements extérieurs qui surviennent, et aux demandes d'action de la part du processeur ou d'un programme. Un :term:`signal` Unix est un mécanisme qui permet à un processus de réagir de façon *asynchrone* à un événement qui s'est produit. Certains de ces événements sont directement liés au fonctionnement du matériel. D'autres sont provoqués par le processus lui-même ou un autre processus s'exécutant sur le système.
 
-Pour être capable d'utiliser les signaux à bon escient, il est important de bien comprendre comment ceux-ci sont implémentés dans le système d'exploitation.
+Pour être capable d'utiliser les signaux à bon escient, il est important de bien comprendre comment ceux-ci sont mis en œuvre dans le système d'exploitation.
 
 Il existe deux types de signaux.
 

@@ -70,7 +70,7 @@ Vagrant.configure(2) do |config|
      sudo apt install -y make git texlive-latex-base texlive-latex-extra texlive-fonts-recommended
      sudo apt install -y python3-sphinx python3-sphinxcontrib.spelling
      sudo apt install -y hunspell hunspell-fr
-     sudo apt install -y python3-pip
+     sudo apt install -y python3-pip python3-stemmer
 #      sudo apt-get install -y python-sphinx 
 #      sudo apt-get install -y python-sphinxcontrib.spelling
 #      sudo apt-get install -y hunspell hunspell-fr

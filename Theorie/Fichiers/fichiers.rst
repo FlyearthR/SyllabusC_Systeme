@@ -1,5 +1,5 @@
 .. -*- coding: utf-8 -*-
-.. Copyright |copy| 2012, 2020 by `Olivier Bonaventure <http://perso.uclouvain.be/olivier.bonaventure>`_, Etienne Rivière, Christoph Paasch, Grégory Detal
+.. Copyright |copy| 2012, 2022 by `Olivier Bonaventure <http://perso.uclouvain.be/olivier.bonaventure>`_, Etienne Rivière, Christoph Paasch, Grégory Detal
 .. Ce fichier est distribué sous une licence `creative commons <http://creativecommons.org/licenses/by-sa/3.0/>`_
 
 .. _utilisateurs:
@@ -12,17 +12,16 @@ Gestion des utilisateurs
 
    multi
 
-Unix est un système d'exploitation multi-utilisateurs. Un tel système impose des contraintes de sécurité qui n'existent pas sur un système mono-utilisateur. Il est intéressant de passer en revue quelques unes de ces contraintes :
+UNIX est un système d'exploitation multi-utilisateurs. Un tel système impose des contraintes de sécurité qui n'existent pas sur un système mono-utilisateur :
 
- - il doit être possible d'identifier et/ou d'authentifier les utilisateurs du système
- - il doit être possible d'exécuter des processus appartenant à plusieurs utilisateurs simultanément et de déterminer quel utilisateur est responsable de chaque opération
- - le système d'exploitation doit fournir des mécanismes simples qui permettent de contrôler l'accès aux différentes ressources (mémoire, stockage, ...).
- - il doit être possible d'allouer certaines ressources à un utilisateur particulier à un moment donné
+ - il doit être possible d'identifier et/ou d'authentifier les utilisateurs du système;
+ - il doit être possible d'exécuter des processus appartenant à plusieurs utilisateurs simultanément et de déterminer quel utilisateur est responsable de chaque opération;
+ - le système d'exploitation doit fournir des mécanismes simples qui permettent de contrôler l'accès aux différentes ressources (mémoire, stockage, ...);
+ - enfin, il doit être possible d'allouer certaines ressources à un utilisateur particulier à un moment donné.
 
+Aujourd'hui, la plupart des systèmes informatiques demandent une authentification de l'utilisateur sous la forme d'un mot de passe, d'une manipulation particulière voire d'une identification biométrique comme une empreinte digitale ou un scan de la forme de son visage. Cette authentification permet de vérifier que l'utilisateur est autorisé à manipuler le système informatique. Cela n'a pas toujours été le cas et de nombreux systèmes informatiques plus anciens étaient conçus pour être utilisés par un seul utilisateur qui était simplement celui qui interagissait physiquement avec l'ordinateur.
 
-Aujourd'hui, la plupart des systèmes informatiques demandent une authentification de l'utilisateur sous la forme d'un mot de passe, d'une manipulation particulière voire d'une identification biométrique comme une empreinte digitale. Cette authentification permet de vérifier que l'utilisateur est autorisé à manipuler le système informatique. Cela n'a pas toujours été le cas et de nombreux systèmes informatiques plus anciens étaient conçus pour être utilisés par un seul utilisateur qui était simplement celui qui interagissait physiquement avec l'ordinateur.
-
-Les systèmes Unix supportent différents mécanismes d'authentification. Le plus simple et le plus utilisé est l'authentification par mot de passe. Chaque utilisateur est identifié par un nom d'utilisateur et il doit prouver son identité en tapant son mot de passe au démarrage de toute session sur le système. En pratique, une session peut s'établir localement sur l'ordinateur via son interface graphique par exemple ou à distance en faisant tourner un serveur tel que `sshd(8)`_ sur le système Unix et en permettant aux utilisateurs de s'y connecter via Internet en utilisant un client `ssh(1)`_. Dans les deux cas, le système d'exploitation lance un processus `login(1)`_ qui permet de vérifier le nom d'utilisateur et le mot de passe fourni par l'utilisateur. Si le mot de passe correspond à celui qui est stocké sur le système, l'utilisateur est authentifié et son shell peut démarrer. Sinon, l'accès au système est refusé.
+Les systèmes UNIX supportent différents mécanismes d'authentification. Le plus simple et le plus utilisé est l'authentification par mot de passe. Chaque utilisateur est identifié par un nom d'utilisateur et il doit prouver son identité en entrant son mot de passe au démarrage de toute session sur le système. En pratique, une session peut s'établir localement sur l'ordinateur via son interface graphique par exemple ou à distance en faisant tourner un serveur tel que `sshd(8)`_ sur le système UNIX et en permettant aux utilisateurs de s'y connecter via Internet en utilisant un client `ssh(1)`_. Dans les deux cas, le système d'exploitation lance un processus `login(1)`_ qui permet de vérifier le nom d'utilisateur et le mot de passe fourni par l'utilisateur. Si le mot de passe correspond à celui qui est stocké sur le système, l'utilisateur est authentifié et son shell peut démarrer. Sinon, l'accès au système est refusé.
 
 
 .. spelling::
@@ -31,10 +30,10 @@ Les systèmes Unix supportent différents mécanismes d'authentification. Le plu
    inode
    inodes
    
-Lorsqu'un utilisateur se connecte sur un système Unix, il fournit son nom d'utilisateur ou `username`. Ce nom d'utilisateur est une chaîne de caractères qui est facile à mémoriser par l'utilisateur. D'un point de vue de mise en œuvre, un système d'exploitation préfère manipuler des valeurs numériques plutôt que des chaînes de caractères. Unix associe à chaque utilisateur un identifiant qui est stocké sous la forme d'un nombre entier positif. La table de correspondance entre l'identifiant d'utilisateur et le nom d'utilisateur est le fichier `/etc/passwd`. Ce fichier texte, comme la grande majorité des fichiers de configuration d'un système Unix, comprend pour chaque utilisateur l'information suivante :
+Lorsqu'un utilisateur se connecte sur un système UNIX, il fournit son nom d'utilisateur ou `username`. Ce nom d'utilisateur est une chaîne de caractères qui est facile à mémoriser par l'utilisateur. D'un point de vue de mise en œuvre, un système d'exploitation préfère manipuler des valeurs numériques plutôt que des chaînes de caractères. UNIX associe à chaque utilisateur un identifiant qui est stocké sous la forme d'un nombre entier positif. La table de correspondance entre l'identifiant d'utilisateur et le nom d'utilisateur est le fichier `/etc/passwd`. Ce fichier texte, comme la grande majorité des fichiers de configuration d'un système UNIX, comprend pour chaque utilisateur l'information suivante :
 
  - nom d'utilisateur (`username`)
- - mot de passe (sur les anciennes versions de Unix)
+ - mot de passe (sur les anciennes versions de UNIX)
  - identifiant de l'utilisateur (:term:`userid`)
  - identifiant du groupe principal auquel l'utilisateur appartient
  - nom et prénom de l'utilisateur
@@ -51,9 +50,9 @@ L'extrait ci-dessous présente un exemple de fichier ``/etc/passwd``. Des détai
  daemon:*:1:1:System Services:/var/root:/usr/bin/false
  slampion:*:1252:1252:Séraphin Lampion:/home/slampion:/bin/bash
 
-Il y a en pratique trois types d'utilisateurs sur un système Unix. L'utilisateur :term:`root` est l'administrateur du système. C'est l'utilisateur qui a le droit de réaliser toutes les opérations sur le système. Il peut créer de nouveaux utilisateurs, mais aussi formatter les disques, arrêter le système, interrompre des processus utilisateurs ou accéder à l'ensemble des fichiers sans restriction. Par convention, cet utilisateur a l'identifiant ``0``. Ensuite, il y a tous les utilisateurs `normaux` du système Unix. Ceux-ci ont le droit d'accéder à leurs fichiers, d'interagir avec leurs processus mais en général ne peuvent pas manipuler les fichiers d'autres utilisateurs ou interrompre leurs processus. L'utilisateur `slampion` dans l'exemple ci-dessus est un utilisateur `normal`. Enfin, pour faciliter l'administration du système, certains systèmes Unix utilisent des utilisateurs qui correspondent à un service particulier comme l'utilisateur `daemon` dans l'exemple ci-dessus. Une discussion de ce type d'utilisateur sort du cadre de ces notes. Le lecteur intéressé pourra consulter une référence sur l'administration des système Unix telle que [AdelsteinLubanovic2007]_ ou [Nemeth+2010]_.
+Il y a en pratique trois types d'utilisateurs sur un système UNIX. L'utilisateur :term:`root` est l'administrateur du système. C'est l'utilisateur qui a le droit de réaliser toutes les opérations sur le système. Il peut créer de nouveaux utilisateurs, mais aussi formater les disques, arrêter le système, interrompre des processus utilisateurs ou accéder à l'ensemble des fichiers sans restriction. Par convention, cet utilisateur a l'identifiant ``0``. Ensuite, il y a tous les utilisateurs `normaux` du système UNIX. Ceux-ci ont le droit d'accéder à leurs fichiers, d'interagir avec leurs processus mais en général ne peuvent pas manipuler les fichiers d'autres utilisateurs ou interrompre leurs processus. L'utilisateur `slampion` dans l'exemple ci-dessus est un utilisateur `normal`. Enfin, pour faciliter l'administration du système, certains systèmes UNIX utilisent des utilisateurs qui correspondent à un service particulier comme l'utilisateur `daemon` dans l'exemple ci-dessus. Une discussion de ce type d'utilisateur sort du cadre de ces notes. Le lecteur intéressé pourra consulter une référence sur l'administration des système UNIX telle que [AdelsteinLubanovic2007]_ ou [Nemeth+2010]_.
 
-Unix associe à chaque processus un identifiant d'utilisateur. Cet identifiant est stocké dans l'entrée du processus dans la table des processus. Un processus peut récupérer son identifiant d'utilisateur via l'appel système `getuid(2)`_. Outre cet appel système, il existe également l'appel système `setuid(2)`_ qui permet de modifier le :term:`userid` du processus en cours d'exécution. Pour des raisons évidentes de sécurité, seul un processus appartenant à l'administrateur système (:term:`root`) peut exécuter cet appel système. C'est le cas par exemple du processus `login(1)`_ qui appartient initialement à :term:`root` puis exécute `setuid(2)`_ afin d'appartenir à l'utilisateur authentifié puis exécute `execve(2)`_ pour lancer le premier shell appartenant à l'utilisateur.
+UNIX associe à chaque processus un identifiant d'utilisateur. Cet identifiant est stocké dans l'entrée du processus dans la table des processus. Un processus peut récupérer son identifiant d'utilisateur via l'appel système `getuid(2)`_. Outre cet appel système, il existe également l'appel système `setuid(2)`_ qui permet de modifier le :term:`userid` du processus en cours d'exécution. Pour des raisons évidentes de sécurité, seul un processus appartenant à l'administrateur système (:term:`root`) peut exécuter cet appel système. C'est le cas par exemple du processus `login(1)`_ qui appartient initialement à :term:`root` puis exécute `setuid(2)`_ afin d'appartenir à l'utilisateur authentifié puis exécute `execve(2)`_ pour lancer le premier shell appartenant à l'utilisateur.
 
 En pratique, il est parfois utile d'associer des droits d'accès à des groupes d'utilisateurs plutôt qu'à un utilisateur particulier. Par exemple, un département universitaire peut avoir un groupe correspondant à tous les étudiants et un autre aux membres du staff pour leur donner des permissions différentes. Un utilisateur peut appartenir à un groupe principal et plusieurs groupes secondaires. Le groupe principal est spécifié dans le fichier `passwd(5)`_  tandis que le fichier ``/etc/group`` décrit dans `group(5)`_ contient les groupes secondaires.
 
@@ -65,7 +64,7 @@ Systèmes de fichiers
 
 Outre un processeur et une mémoire, la plupart des ordinateurs actuels sont équipés d'un ou plusieurs dispositifs de stockage. Les dispositifs les plus courants sont le disque dur ou le SSD, le lecteur de DVD-ROM, les clés USB et cartes mémoire, ... Ces dispositifs de stockage ont des caractéristiques techniques très différentes. Certains stockent l'information sous forme magnétique, d'autres sous forme électrique ou en creusant en utilisant un laser des trous dans un support physique. D'un point de vue logique, ils offrent pourtant tous une interface très similaire au système d'exploitation qui veut les utiliser.
 
-Dans un système de fichiers Unix, l'ensemble des répertoires et fichiers est organisé sous la forme d'un arbre. La racine de cet arbre est le répertoire ``/``. Il est localisé sur un des dispositifs de stockage du système. Le système de fichiers Unix permet d'intégrer facilement des systèmes de fichiers qui se trouvent sur différents dispositifs de stockage. Cette opération est en général réalisée par l'administrateur système en utilisant la commande `mount(8)`_. A titre d'exemple, voici quelques répertoires qui sont montés sur un système Linux.
+Dans un système de fichiers UNIX, l'ensemble des répertoires et fichiers est organisé sous la forme d'un arbre. La racine de cet arbre est le répertoire ``/``. Il est localisé sur un des dispositifs de stockage du système. Le système de fichiers UNIX permet d'intégrer facilement des systèmes de fichiers qui se trouvent sur différents dispositifs de stockage. Cette opération est en général réalisée par l'administrateur système en utilisant la commande `mount(8)`_. A titre d'exemple, voici quelques répertoires qui sont montés sur un système Linux.
 
 .. code-block:: console
 
@@ -116,7 +115,7 @@ Les valeurs de ces bits sont représentés pas les symboles ``rwx`` dans l'outpu
 
 La signification du bit ``x`` est différente pour les répertoires et pour les fichiers.
 Ce bit indique qu'un fichier peut être utilisé par l'appel système `execve(2)`_ pour amorcer l'exécution d'un programme.
-Pour un répertoire, le bit ``x`` donne le droit de parcours, c'est à dire le droit d'accéder des fichiers ou sous-répertoires présents dans ce répertoire.
+Pour un répertoire, le bit ``x`` donne le droit de *parcours*, c'est à dire le droit d'accéder aux fichiers ou sous-répertoires présents dans ce répertoire.
 L'opération de lister le contenu d'un répertoire (avec la commande `ls(1)`_ par exemple) nécessite le droit ``r``, comme le montre l'exemple suivant.
 
 .. code-block:: console
@@ -134,22 +133,19 @@ L'opération de lister le contenu d'un répertoire (avec la commande `ls(1)`_ pa
  $ cat repertoire/fichier
  LINFO1252
 
-
-Pour un répertoire, il indique que le répertoire peut être listé (par exemple, en utilisant )
-
 .. note:: Manipulation des bits de permission avec `chmod(2)`_
 
  L'appel système `chmod(2)`_ permet de modifier les bits de permission qui sont associés à un fichier. Ceux-ci sont encodés sous la forme d'un entier sur 16 bits.
 
-  - ``S_IRUSR (00400)`` : permission de lecture par le propriétaire
-  - ``S_IWUSR (00200)`` : permission d'écriture par le propriétaire
-  - ``S_IXUSR (00100)`` : permission d'exécution par le propriétaire
-  - ``S_IRGRP (00040)`` : permission de lecture par le groupe hormis le propriétaire
-  - ``S_IWGRP (00020)`` : permission d'écriture par le groupe hormis le propriétaire
-  - ``S_IXGRP (00010)`` : permission d'exécution par le groupe hormis le propriétaire
-  - ``S_IROTH (00004)`` : permission de lecture par tout utilisateur hormis le propriétaire et son groupe
-  - ``S_IWOTH (00002)`` : permission d'écriture par tout utilisateur hormis le propriétaire et son groupe
-  - ``S_IXOTH (00001)`` : permission d'exécution par tout utilisateur hormis le propriétaire et son groupe
+  - ``S_IRUSR (0x0400)`` : permission de lecture par le propriétaire
+  - ``S_IWUSR (0x0200)`` : permission d'écriture par le propriétaire
+  - ``S_IXUSR (0x0100)`` : permission d'exécution par le propriétaire
+  - ``S_IRGRP (0x0040)`` : permission de lecture par le groupe hormis le propriétaire
+  - ``S_IWGRP (0x0020)`` : permission d'écriture par le groupe hormis le propriétaire
+  - ``S_IXGRP (0x0010)`` : permission d'exécution par le groupe hormis le propriétaire
+  - ``S_IROTH (0x0004)`` : permission de lecture par tout utilisateur hormis le propriétaire et son groupe
+  - ``S_IWOTH (0x0002)`` : permission d'écriture par tout utilisateur hormis le propriétaire et son groupe
+  - ``S_IXOTH (0x0001)`` : permission d'exécution par tout utilisateur hormis le propriétaire et son groupe
 
   .. code-block:: c
 
@@ -158,7 +154,7 @@ Pour un répertoire, il indique que le répertoire peut être listé (par exempl
 
  Ces bits de permissions sont généralement spécifiés soit sous la forme d'une disjonction logique ou sous forme numérique. A titre d'exemple, un fichier qui peut être lu et écrit uniquement par son propriétaire aura comme permissions ``00600`` ou ``S_IRUSR|S_IWUSR``.
 
- Les bits de permission de bits de poids fort servent à encoder des permissions particulières relatives aux fichiers et répertoires. Par exemple, lorsque la permission ``S_ISUID (04000)`` est associée à un exécutable, elle indique que celui-ci doit s'exécuter avec les permissions du propriétaire de l'exécutable et pas les permissions de l'utilisateur. Cette permission spéciale est utilisée par des programmes comme `passwd(1)`_ qui doivent disposer des permissions de l'administrateur système pour s'exécuter correctement (`passwd(1)`_ doit modifier le fichier `passwd(5)`_ qui appartient à l'administrateur système).
+ Les 12 bits de poids faibles sont utilisés pour les permissions de lecture, écriture et exécution. Les 4 bits supplémentaires de poids fort servent à encoder des permissions particulières relatives aux fichiers et répertoires. Par exemple, lorsque la permission ``S_ISUID (0x4000)`` est associée à un exécutable, elle indique que celui-ci doit s'exécuter avec les permissions du propriétaire de l'exécutable et pas les permissions de l'utilisateur. Cette permission spéciale est utilisée par des programmes comme `passwd(1)`_ qui doivent disposer des permissions de l'administrateur système pour s'exécuter correctement (`passwd(1)`_ doit modifier le fichier `passwd(5)`_ qui appartient à l'administrateur système).
 
 
 Les exemples ci-dessous présentent le contenu partiel d'un répertoire.
@@ -178,7 +174,7 @@ Les exemples ci-dessous présentent le contenu partiel d'un répertoire.
  drwxr-xr-x  3 obo  stafinfo       4096 Mar  2 09:30 sinf1252
  drwxr-xr-x  2 obo  stafinfo       4096 May 17  2011 src
 
-Dans un système Unix, que ce soit au niveau du shell ou dans n'importe quel processus écrit par exemple en langage C, les fichiers peuvent être spécifiés de deux façons. La première est d'indiquer le chemin complet depuis la racine qui permet d'accéder au fichier. Le chemin ``/etinfo/users/obo`` passé comme argument à la commande `ls(1)`_ ci-dessus en est un exemple. Le premier caractère ``/`` correspond à la racine du système de fichiers et ensuite ce caractère est utilisé comme séparateur entre les répertoires successifs. Ainsi, le fichier  ``/etinfo/users/obo/hello.c`` est un fichier qui a comme nom ``hello.c`` qui se trouve dans un répertoire nommé ``obo`` qui lui-même se trouve dans le répertoire ``users`` qui est dans le répertoire baptisé ``etinfo`` dans le répertoire racine. La seconde façon de spécifier un nom de fichier est de préciser son nom relatif. Pour éviter de forcer l'utilisateur à spécifier chaque fois le nom complet des fichiers et répertoires auxquels il veut accéder, le noyau maintient dans sa table des processus le :term:`répertoire courant` de chaque processus. Par défaut, lorsqu'un processus est lancé, son répertoire courant est le répertoire à partir duquel le programme a été lancé. Ainsi, lorsque l'utilisateur tape une commande comme ``gcc hello.c`` depuis son shell, le processus `gcc(1)`_ peut directement accéder au fichier ``hello.c`` qui se situe dans le répertoire courant. Un processus peut modifier son répertoire courant en utilisant l'appel système `chdir(2)`_.
+Dans un système UNIX, que ce soit au niveau du shell ou dans n'importe quel processus écrit par exemple en langage C, les fichiers peuvent être spécifiés de deux façons. La première est d'indiquer le chemin complet depuis la racine qui permet d'accéder au fichier. Le chemin ``/etinfo/users/obo`` passé comme argument à la commande `ls(1)`_ ci-dessus en est un exemple. Le premier caractère ``/`` correspond à la racine du système de fichiers et ensuite ce caractère est utilisé comme séparateur entre les répertoires successifs. Ainsi, le fichier  ``/etinfo/users/obo/hello.c`` est un fichier qui a comme nom ``hello.c`` qui se trouve dans un répertoire nommé ``obo`` qui lui-même se trouve dans le répertoire ``users`` qui est dans le répertoire baptisé ``etinfo`` dans le répertoire racine. La seconde façon de spécifier un nom de fichier est de préciser son nom relatif. Pour éviter de forcer l'utilisateur à spécifier chaque fois le nom complet des fichiers et répertoires auxquels il veut accéder, le noyau maintient dans sa table des processus le :term:`répertoire courant` de chaque processus. Par défaut, lorsqu'un processus est lancé, son répertoire courant est le répertoire à partir duquel le programme a été lancé. Ainsi, lorsque l'utilisateur tape une commande comme ``gcc hello.c`` depuis son shell, le processus `gcc(1)`_ peut directement accéder au fichier ``hello.c`` qui se situe dans le répertoire courant. Un processus peut modifier son répertoire courant en utilisant l'appel système `chdir(2)`_.
 
 
 .. code-block:: c
@@ -245,7 +241,7 @@ La lecture d'un répertoire avec `readdir(3)`_ commence au début de ce réperto
  Cette fonction prend comme arguments le pointeur ``entry`` vers un buffer propre à l'appelant qui permet de stocker le résultat de `readdir_r(3)`_.
 
 
-Les appels systèmes `link(2)`_ et `unlink(2)`_ sont un peu particuliers et méritent une description plus détaillée. Sous Unix, un :term:`inode` est associé à chaque fichier mais l':term:`inode` ne contient pas le nom de fichier parmi les méta-données qu'il stocke. Par contre, chaque :term:`inode` contient un compteur (``nlinks``) du nombre de liens vers un fichier. Cela permet d'avoir une seule copie d'un fichier qui est accessible depuis plusieurs répertoires. Pour comprendre cette utilisation des liens sur un système de fichiers Unix, considérons le scénario suivant.
+Les appels systèmes `link(2)`_ et `unlink(2)`_ sont un peu particuliers et méritent une description plus détaillée. Sous UNIX, un :term:`inode` est associé à chaque fichier mais l':term:`inode` ne contient pas le nom de fichier parmi les méta-données qu'il stocke. Par contre, chaque :term:`inode` contient un compteur (``nlinks``) du nombre de liens vers ce fichier. Cela permet d'avoir une seule copie d'un fichier qui est accessible depuis plusieurs répertoires. Pour comprendre cette utilisation des liens sur un système de fichiers UNIX, considérons le scénario suivant.
 
 	.. code-block:: console
 
@@ -289,9 +285,9 @@ Les appels systèmes `link(2)`_ et `unlink(2)`_ sont un peu particuliers et mér
 	   total 8
 	   9624126 -rw-r--r--  1 obo  stafinfo  16 24 mar 21:15 test3.txt
 
-Dans ce scénario, deux répertoires sont créés avec la commande `mkdir(1)`_. Ensuite, la commande `echo(1)`_ est utilisée pour créer le fichier ``test.txt`` contenant la chaîne de caractères ``test`` dans le répertoire ``a``. Ce fichier est associé à l':term:`inode` ``9624126``. La commande `ln(1)`_ permet de rendre ce fichier accessible sous un autre nom depuis le même répertoire. La sortie produite par la commande `ls(1)`_ indique que ces deux fichiers qui sont présents dans le répertoire ``a`` ont tous les deux le même ``inode``. Ils correspondent donc aux mêmes données sur le disque. A ce moment, le compteur ``nlinks`` de l':term:`inode` ``9624126`` a la valeur ``2``. La commande `ln(1)`_ peut être utilisée pour créer un lien vers un fichier qui se trouve dans un autre répertoire [#flns]_ comme le montre la création du fichier ``test3.txt`` dans le répertoire ``b``. Ces trois fichiers correspondant au même :term:`inode`, toute modification à l'un des fichiers affecte et est visible dans n'importe lequel des liens vers ce fichier. C'est ce que l'on voit lorsque la commande ``echo "complement" >> b/test3.txt`` est exécutée. Cette commande affecte immédiatement les trois fichiers. La commande ``rm a/test2.txt`` efface la référence du fichier sous le nom ``a/test2.txt``, mais les deux autres liens restent accessibles. Le fichier ne sera réellement effacé qu'après que le dernier lien vers l':term:`inode` correspondant aie été supprimé. La commande `rm(1)`_ utilise en pratique l'appel système `unlink(2)`_ qui en toute généralité décrémente le compteur de liens de l'inode correspondant au fichier et l'efface lorsque ce compteur atteint la valeur ``0``.
+Dans ce scénario, deux répertoires sont créés avec la commande `mkdir(1)`_. Ensuite, la commande `echo(1)`_ est utilisée pour créer le fichier ``test.txt`` contenant la chaîne de caractères ``test`` dans le répertoire ``a``. Ce fichier est associé à l':term:`inode` ``9624126``. La commande `ln(1)`_ permet de rendre ce fichier accessible sous un autre nom depuis le même répertoire. La sortie produite par la commande `ls(1)`_ indique que ces deux fichiers qui sont présents dans le répertoire ``a`` ont tous les deux le même ``inode``. Ils correspondent donc aux mêmes données sur le disque. À ce moment, le compteur ``nlinks`` de l':term:`inode` ``9624126`` a la valeur ``2``. La commande `ln(1)`_ peut être utilisée pour créer un lien vers un fichier qui se trouve dans un autre répertoire [#flns]_ comme le montre la création du fichier ``test3.txt`` dans le répertoire ``b``. Ces trois fichiers correspondant au même :term:`inode`, toute modification à l'un des fichiers affecte et est visible dans n'importe lequel des liens vers ce fichier. C'est ce que l'on voit lorsque la commande ``echo "complement" >> b/test3.txt`` est exécutée. Cette commande affecte immédiatement les trois fichiers. La commande ``rm a/test2.txt`` efface la référence du fichier sous le nom ``a/test2.txt``, mais les deux autres liens restent accessibles. Le fichier ne sera réellement effacé qu'après que le dernier lien vers l':term:`inode` correspondant aie été supprimé. La commande `rm(1)`_ utilise en pratique l'appel système `unlink(2)`_ qui en toute généralité décrémente le compteur de liens de l'inode correspondant au fichier et l'efface lorsque ce compteur atteint la valeur ``0``.
 
-Une description détaillée du fonctionnement de ces appels systèmes et fonctions de la librairie standard peut se trouver dans les livres de référence sur la programmation en C sous Unix [Kerrisk2010]_, [Mitchell+2001]_, [StevensRago2008]_.
+Une description détaillée du fonctionnement de ces appels systèmes et fonctions de la librairie standard peut se trouver dans les livres de référence sur la programmation en C sous UNIX [Kerrisk2010]_, [Mitchell+2001]_, [StevensRago2008]_.
 
 .. note:: Liens symboliques
 
@@ -333,7 +329,7 @@ Utilisation des fichiers
 ------------------------
 
 Si quelques processus manipulent le système de fichiers et parcourent les répertoires, les processus qui utilisent des données sauvegardées dans des fichiers sont encore plus nombreux. 
-En plus du mapping des fichiers en mémoire que nous avons abordé précédemment dans le syllabus, un système Unix offre deux possibilités pour écrire et lire des données dans un fichier.
+En plus du mapping des fichiers en mémoire que nous avons abordé précédemment, un système UNIX offre deux possibilités pour écrire et lire des données dans un fichier.
 La première utilise directement les appels systèmes `open(2)`_, `read(2)`_/ `write(2)`_ et `close(2)`_.
 La seconde s'appuie sur les fonctions `fopen(3)`_, `fread(3)`_/ `fwrite(3)`_ et `fclose(3)`_ de la librairie `stdio(3)`_. Seuls les appels systèmes seront traités dans ce cours. Des détails complémentaires sur les fonctions de la libraire peuvent être obtenus dans [Kerrisk2010]_, [Mitchell+2001]_ ou [StevensRago2008]_.
 
@@ -359,15 +355,15 @@ En plus de l'un des trois drapeaux ci-dessus, il est également possible de spé
  - ``O_CREAT`` : indique que si le fichier n'existe pas, il doit être créé lors de l'exécution de l'appel système `open(2)`_. L'appel système `creat(2)`_ peut également être utilisé pour créer un nouveau fichier. Lorsque le drapeau ``O_CREAT`` est spécifié, l'appel système `open(2)`_ prend comme troisième argument les permissions du fichier qui doit être créé. Celles-ci sont spécifiées de la même façon que pour l'appel système `chmod(2)`_. Si elles ne sont pas spécifiées, le fichier est ouvert avec comme permissions les permissions par défaut du processus définies par l'appel système `umask(2)`_
  - ``O_APPEND`` : indique que le fichier est ouvert de façon à ce que les données écrites dans le fichier par l'appel système `write(2)`_ s'ajoutent à la fin du fichier.
  - ``O_TRUNC`` : indique que si le fichier existe déjà et qu'il est ouvert en écriture, alors le contenu du fichier doit être supprimé avant que le processus ne commence à y accéder.
- - ``O_SYNC`` : ce drapeau indique que toutes les opérations d'écriture sur le fichier doivent être effectuées immédiatement sur le dispositif de stockage sans être mises en attente dans les buffers du noyau du système d'exploitation
+ - ``O_SYNC`` : ce drapeau indique que toutes les opérations d'écriture sur le fichier doivent être effectuées immédiatement sur le dispositif de stockage sans être mises en attente dans les buffers du noyau du système d'exploitation.
  - ``O_CLOEXEC`` : ce drapeau qui est spécifique à Linux indique que le fichier doit être automatiquement fermé lors de l'exécution de l'appel système `execve(2)`_. Normalement, les fichiers qui ont été ouverts par `open(2)`_ restent ouverts lors de l'exécution de `execve(2)`_.
 
 
-Ces différents drapeaux binaires doivent être combinés en utilisant une disjonction logique entre les différents drapeaux. Ainsi, ``O_CREAT|O_RDWR`` correspond à l'ouverture d'un fichier qui doit à la fois être créé si il n'existe pas et ouvert en lecture et écriture.
+Ces différents drapeaux binaires doivent être combinés en utilisant une disjonction logique entre les différents drapeaux. Ainsi, ``O_CREAT|O_RDWR`` correspond à l'ouverture d'un fichier qui doit à la fois être créé si il n'existe pas et est ouvert en lecture et écriture.
 
 Lors de l'exécution de `open(2)`_, le noyau du système d'exploitation vérifie si le processus qui exécute l'appel système dispose des permissions suffisantes pour accéder au fichier. Si oui, le système d'exploitation ouvre le fichier et retourne au processus appelant le :term:`descripteur de fichier` correspondant. Si non, le processus récupère une valeur de retour négative et ``errno`` indique le type d'erreur.
 
-Sous Unix, un :term:`descripteur de fichier` est représenté sous la forme d'un entier positif. L'appel système `open(2)`_ retourne toujours le plus petit :term:`descripteur de fichier` disponible. Par convention,
+Sous UNIX, un :term:`descripteur de fichier` est représenté sous la forme d'un entier positif. L'appel système `open(2)`_ retourne toujours le plus petit :term:`descripteur de fichier` disponible. Par convention,
 
  - ``0`` est le :term:`descripteur de fichier` correspondant à l'entrée standard.
  - ``1`` est le :term:`descripteur de fichier` correspondant à la sortie standard.
@@ -377,9 +373,9 @@ Si l'appel système `open(2)`_ échoue, il retourne ``-1`` comme :term:`descript
 
 .. note:: Seul `open(2)`_ vérifie les permissions d'accès aux fichiers
 
- Sous Unix, seul l'appel système `open(2)`_ vérifie qu'un processus dispose des permissions suffisantes pour accéder à un fichier qui est ouvert. Si les permissions ou le propriétaire d'un fichier change alors que ce fichier est ouvert par un processus, ce processus continue à pouvoir y accéder sans être affecté par la modification de droits. Il en va de même lorsqu'un fichier est effacé avec l'appel système `unlink(2)`_. Si un processus utilisait le fichier qui est effacé, il continue à pouvoir l'utiliser même si le fichier n'apparaît plus dans le répertoire.
+ Sous UNIX, seul l'appel système `open(2)`_ vérifie qu'un processus dispose des permissions suffisantes pour accéder à un fichier qui est ouvert. Si les permissions ou le propriétaire d'un fichier change alors que ce fichier est ouvert par un processus, ce processus continue à pouvoir y accéder sans être affecté par la modification de droits. Il en va de même lorsqu'un fichier est effacé avec l'appel système `unlink(2)`_. Si un processus utilisait le fichier qui est effacé, il continue à pouvoir l'utiliser même si le fichier n'apparaît plus dans le répertoire.
 
-Toutes les opérations qui sont faites sur un fichier se font en utilisant le :term:`descripteur de fichier` comme référence au fichier. Un :term:`descripteur de fichier` est une ressource limitée dans un système d'exploitation tel que Unix et il est important qu'un processus n'ouvre pas inutilement un grand nombre de fichiers [#flimit]_ et ferme correctement les fichiers ouverts lorsqu'il ne doit plus y accéder. Cela se fait en utilisant l'appel système `close(2)`_. Celui-ci prend comme argument le :term:`descripteur de fichier` qui doit être fermé.
+Toutes les opérations qui sont faites sur un fichier se font en utilisant le :term:`descripteur de fichier` comme référence au fichier. Un :term:`descripteur de fichier` est une ressource limitée dans un système d'exploitation tel que UNIX et il est important qu'un processus n'ouvre pas inutilement un grand nombre de fichiers [#flimit]_ et ferme correctement les fichiers ouverts lorsqu'il ne doit plus y accéder. Cela se fait en utilisant l'appel système `close(2)`_. Celui-ci prend comme argument le :term:`descripteur de fichier` qui doit être fermé.
 
 .. code-block:: c
 
@@ -420,7 +416,7 @@ Lors de son exécution, ce programme affiche la sortie ci-dessous.
 
 Si il est bien possible de sauvegarder dans un fichier des entiers, des nombres en virgule flottante voire même des structures, il faut être bien conscient que l'appel système `write(2)`_ se contente de sauvegarder sur le disque le contenu de la zone mémoire pointée par le pointeur qu'il a reçu comme second argument. Si comme dans l'exemple précédent c'est le même processus qui lit les données qu'il a écrit, il pourra toujours récupérer les données correctement.
 
-Par contre, lorsqu'un fichier est écrit sur un ordinateur, envoyé via Internet et lu sur un autre ordinateur, il peut se produire plusieurs problèmes dont il faut être conscient. Le premier problème est que deux ordinateurs différents n'utilisent pas nécessairement le même nombre d'octets pour représenter chaque type de données. Ainsi, sur un ordinateur équipé d'un ancien processeur [IA32]_, les entiers sont représentés sur 32 bits (i.e. 4 bytes) alors que sur les processeurs plus récents ils sont souvent représentés sur 64 bits (i.e. 8 bytes). Cela implique qu'un tableau de 100 entiers en 32 bits sera interprété comme un tableau de 50 entiers en 64 bits.
+Par contre, lorsqu'un fichier est écrit sur un ordinateur, envoyé via Internet et lu sur un autre ordinateur, il peut se produire plusieurs problèmes dont il faut être conscient. Le premier problème est que deux ordinateurs différents n'utilisent pas nécessairement le même nombre d'octets pour représenter chaque type de données. Ainsi, sur un ordinateur équipé d'un ancien processeur [IA32]_, les entiers sont représentés sur 32 bits (i.e. 4 octets) alors que sur les processeurs plus récents ils sont souvent représentés sur 64 bits (i.e. 8 octets). Cela implique qu'un tableau de 100 entiers en 32 bits sera interprété comme un tableau de 50 entiers en 64 bits.
 
 Le second problème est que les fabricants de processeurs ne se sont pas mis d'accord sur la façon dont il fallait représenter les entiers sur 16 et 32 bits en mémoire. Il y a deux techniques qui sont utilisées : :term:`big endian` et :term:`little endian`.
 
@@ -502,7 +498,7 @@ Fichiers mappés en mémoire
 L'utilisation de fichiers mappés en mémoire avec l'appel système `mmap(2)`_ est une alternative à l'utilisation des appels `open(2)`_, `read(2)`_, `write(2)`_ et `close(2)`_.
 Ce sujet est détaillé dans le chapitre précédent de ce syllabus, dédié à l'utilisation de la mémoire virtuelle.
 
-.. Lorsqu'un processus Unix veut lire ou écrire des données dans un fichier, il utilise en général les appels systèmes `open(2)`_, `read(2)`_, `write(2)`_ et `close(2)`_ directement ou à travers une librairie de plus haut niveau comme la libraire d'entrées/sorties standard. Ce n'est pas la seule façon pour accéder à des données sur un dispositif de stockage. Grâce à la mémoire virtuelle, il est possible de placer le contenu d'un fichier ou d'une partie de fichier dans une zone de la mémoire du processus. Cette opération peut être effectuée en utilisant l'appel système `mmap(2)`_. Cet appel système permet de rendre un fichier accessibles directement dans la mémoire du processus.
+.. Lorsqu'un processus UNIX veut lire ou écrire des données dans un fichier, il utilise en général les appels systèmes `open(2)`_, `read(2)`_, `write(2)`_ et `close(2)`_ directement ou à travers une librairie de plus haut niveau comme la libraire d'entrées/sorties standard. Ce n'est pas la seule façon pour accéder à des données sur un dispositif de stockage. Grâce à la mémoire virtuelle, il est possible de placer le contenu d'un fichier ou d'une partie de fichier dans une zone de la mémoire du processus. Cette opération peut être effectuée en utilisant l'appel système `mmap(2)`_. Cet appel système permet de rendre un fichier accessibles directement dans la mémoire du processus.
 ..
 ..
 ..
@@ -568,7 +564,7 @@ Ce sujet est détaillé dans le chapitre précédent de ce syllabus, dédié à 
 
 .. [#fext2fs] Source : `linux/ext2_fs.h`_
 
-.. [#flns] Dans un système de fichiers Unix, un lien ne peut être créé avec `ln(1)`_ ou `link(2)`_ que lorsque les deux répertoires concernés sont situés sur le même système de fichiers. Si ce n'est pas le cas, il faut utiliser un :term:`lien symbolique`. Ceux-ci peuvent être créés en utilisant l'appel système `symlink(2)`_ ou via la commande `ln(1)`_ avec l'argument ``-s``.
+.. [#flns] Dans un système de fichiers UNIX, un lien ne peut être créé avec `ln(1)`_ ou `link(2)`_ que lorsque les deux répertoires concernés sont situés sur le même système de fichiers. Si ce n'est pas le cas, il faut utiliser un :term:`lien symbolique`. Ceux-ci peuvent être créés en utilisant l'appel système `symlink(2)`_ ou via la commande `ln(1)`_ avec l'argument ``-s``.
 
 .. [#flimit] Il y a une limite maximale au nombre de fichiers qui peuvent être ouverts par un processus. Cette limite peut être récupérée avec l'appel système `getdtablesize(2)`_.
 
