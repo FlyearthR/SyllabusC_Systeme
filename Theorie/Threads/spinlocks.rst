@@ -10,7 +10,7 @@ Mise en oeuvre de la synchronisation
 Nous avons vu dans les chapitres précédents comment utiliser les constructions de synchronisation que sont les mutex et les sémaphores fournies par les librairies POSIX.
 Nous allons nous intéresser dans ce chapitre à la façon dont ces constructions sont mises en œuvre.
 
-Nous mettrons l'emphase plus particulièrement sur la résolution du problème de l'exclusion mutuelle, utile pour protéger l'accès aux structures de données utilisées pour la synchronisation (e.g. protéger l'accès à l'état d'un mutex ou au compteur associé à un sémaphore).
+Nous insisterons sur l'exclusion mutuelle, utile pour protéger l'accès aux structures de données utilisées pour la synchronisation (e.g., protéger l'accès à l'état d'un mutex ou au compteur associé à un sémaphore).
 Les mécanismes que nous verrons permettent de façon générale de protéger l'accès à des sections de code devant s'exécuter de manière exclusive les unes des autres.
 
 .. La mise en attente des threads en état Blocked par le scheduler, lorsque ceux-ci
@@ -38,7 +38,7 @@ Dans un premier temps, nous verrons des algorithmes "traditionnels" proposés po
 Ces algorithmes utilisent uniquement des opérations de lecture et d'écriture en mémoire.
 Ils ont un intérêt historique : ils ne sont pas exploitables (ou alors avec un surcoût très élevé) sur les architectures de processeurs modernes.
 Il est toutefois intéressant de les étudier pour comprendre le problème de l'exclusion mutuelle et ses variations.
-Par la suite, nous verrons des algorithmes utilisant des instructions spécifiques disponibles dans le jeu d'instruction des processeurs et permettent de résoudre ces problèmes de synchronisation, et nous étudierons leur performance.
+Par la suite, nous verrons des algorithmes utilisant des instructions spécifiques disponibles dans le jeu d'instruction des processeurs pour résoudre ces problèmes de synchronisation et nous étudierons leur performance.
 
 Algorithme de Peterson
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -80,8 +80,8 @@ En effet, si ``turn`` vaut ``1`` au début de la boucle ``while (turn != 0) { }`
   section_critique();
   turn=0;
 
-Il est intéressant d'analyser ces deux threads en détails pour déterminer si ils permettent d'éviter une violation de section critique. 
-Dans ces deux threads, pour qu'une violation de section critique puisse se produire, il faudrait que les deux threads passent en même temps la boucle ``while`` qui précède la section critique.
+Il est intéressant d'analyser ces deux threads en détails pour déterminer si ils permettent d'éviter une violation de l'exclusion mutuelle. 
+Dans ces deux threads, pour qu'une violation de l'exclusion mutuelle puisse se produire, il faudrait que les deux threads sortent en même temps de la boucle ``while`` qui précède la section critique.
 Imaginons que le premier thread est entré dans sa section critique.
 Puisqu'il est sorti de sa boucle ``while``, cela implique que la variable ``turn`` a la valeur ``0``.
 Sinon, le premier thread serait toujours en train d'exécuter sa boucle ``while``.
@@ -91,9 +91,10 @@ Pour entrer dans sa section critique, celui-ci va exécuter la boucle ``while (t
 La boucle dans le second thread va donc s'exécuter en permanence.
 Elle ne s'arrêtera que si la valeur de ``turn`` change.
 Or, le premier thread ne pourra changer la valeur de ``turn`` que lorsqu'il aura quitté sa section critique.
-Cette solution évite donc toute violation de la section critique.
+Cette solution évite donc toute violation de l'exclusion mutuelle.
 Malheureusement, elle ne fonctionne que si il y a une alternance stricte entre les deux threads.
-Le second s'exécute après le premier, qui lui-même s'exécute après le second, ... Cette nécessité d'une alternance n'est évidemment pas acceptable : on souhaite que le premier thread puisse exécuter plusieurs sections critiques à la suite sans dépendre des actions du second thread.
+Le second s'exécute après le premier, qui lui-même s'exécute après le second, ...
+Cette nécessité d'une alternance n'est évidemment pas acceptable : on souhaite que le premier thread puisse exécuter plusieurs sections critiques à la suite sans dépendre des actions du second thread.
 
 Analysons une seconde solution.
 Celle-ci utilise un tableau ``flag`` contenant deux drapeaux, un par thread.
@@ -136,20 +137,21 @@ Le second thread est organisé d'une façon similaire.
    flag[B]=false;
    // ...
 
-Analysons le fonctionnement de cette solution et vérifions si elle permet d'éviter toute violation de section critique.
-Pour qu'une violation de section critique se produise, il faudrait que les deux threads exécutent simultanément leur section critique.
+Analysons le fonctionnement de cette solution et vérifions si elle permet d'éviter toute violation de l'exclusion mutuelle.
+Pour qu'une violation de l'exclusion mutuelle se produise, il faudrait que les deux threads exécutent simultanément leur sections critiques.
 La boucle ``while`` qui précède dans chaque thread l'entrée en section critique parait éviter les problèmes puisque si le thread ``A`` est dans sa section critique, il a mis ``flag[A]`` à la valeur ``true`` et donc le thread ``B`` exécutera en permanence sa boucle ``while``.
 Malheureusement, la situation suivante est possible.
 Supposons que ``flag[A]`` et ``flag[B]`` ont la valeur ``false`` et que les deux threads souhaitent entrer dans leur section critique en même temps.
 Chaque thread va pouvoir traverser sa boucle ``while`` sans attente puis seulement mettre son drapeau à ``true``.
-A cet instant il est trop tard et une violation de section critique se produira.
+A cet instant il est trop tard et une violation de l'exclusion mutuelle se produira.
 Cette violation a été illustrée sur une machine multiprocesseur qui exécute deux threads simultanément.
 Elle est possible également sur une machine monoprocesseur, où il n'est pas possible que les deux threads souhaitent entrer dans leur section critique en même temps car un seul thread peut être exécuté à un moment donné.
 Dans ce cas, il suffit d'imaginer que le thread ``A`` passe sa boucle ``while`` et est interrompu par le scheduler avant d'exécuter ``flag[A]=true;``.
 Le scheduler réalise un changement de contexte et permet au thread ``B`` de s'exécuter.
 Il peut passer sa boucle ``while`` puis entre en section critique alors que le thread ``A`` est également prêt à y entrer.
 
-Une alternative pour éviter le problème de violation de l'exclusion mutuelle pourrait être d'inverser la boucle ``while`` et l'assignation du drapeau. Pour le thread ``A``, cela donnerait le code ci-dessous :
+Une alternative pour éviter le problème de violation de l'exclusion mutuelle pourrait être d'inverser la boucle ``while`` et l'assignation du drapeau.
+Pour le thread ``A``, cela donnerait le code ci-dessous :
 
 .. code-block:: c
 
@@ -216,31 +218,32 @@ Le thread ``B`` s'implémente de façon similaire.
    flag[B]=false;
    // ...
 
-Pour vérifier si cette solution répond bien au problème de l'exclusion mutuelle, il nous faut d'abord vérifier qu'il ne peut y avoir de violation de la section critique.
-Pour qu'une violation de section critique soit possible, il faudrait que les deux threads soient sortis de leur boucle ``while``.
+Il nous faut d'abord vérifier qu'il ne peut y avoir de violation de l'exclusion mutuelle.
+Pour qu'une violation de l'exclusion mutuelle soit possible, il faudrait que les deux threads soient sortis de leur boucle ``while``.
 Examinons le cas où le thread ``B`` se trouve en section critique.
 Dans ce cas, ``flag[B]`` a la valeur ``true``.
 Si le thread ``A`` veut entrer en section critique, il va d'abord devoir exécuter ``flag[A]=true;`` et ensuite ``turn=B;``.
 Comme le thread ``B`` ne modifie ni ``flag[A]`` ni ``turn`` dans sa section critique, thread ``A`` va devoir exécuter sa boucle ``while`` jusqu'à ce que le thread ``B`` sorte de sa section critique et exécute ``flag[B]=false;``.
-Il ne peut donc pas y avoir de violation de la section critique.
+Il ne peut donc pas y avoir de violation de l'exclusion mutuelle.
 
 Il nous faut également montrer que l'algorithme de Peterson ne peut pas causer de :term:`livelock`.
 Pour qu'un tel :term:`livelock` soit possible, il faudrait que les boucles ``while((flag[A]==true)&&(turn==A)) {};``  et ``while((flag[B]==true)&&(turn==B)) {};`` puissent s'exécuter en permanence en même temps.
 Comme la variable ``turn`` ne peut prendre que la valeur ``A`` ou la valeur ``B``, il est impossible que les deux conditions de boucle soient simultanément vraies.
 
-Enfin, considérons l'impact de l'arrêt d'un des deux threads. Si thread ``A`` s'arrête hors de sa section critique, ``flag[A]`` a la valeur ``false`` et le thread ``B`` pourra toujours accéder à sa section critique.
+Enfin, considérons l'impact de l'arrêt d'un des deux threads. 
+Si le thread ``A`` s'arrête hors de sa section critique, ``flag[A]`` a la valeur ``false`` et le thread ``B`` pourra toujours accéder à sa section critique.
 
 Algorithme du filtre
 ^^^^^^^^^^^^^^^^^^^^
 
 La version de l'algorithme de Peterson que nous avons vu permet de synchroniser l'accès à la section critique de *seulement* deux threads.
-Il est possible d'étendre son principe pour supporter plusieurs threads, sous le principe de l'algorithme dit du filtre (Filter algorithm), lui aussi proposé par Gary L. Peterson.
+Il est possible d'étendre son principe pour supporter plusieurs threads, sous le principe de l'algorithme dit du filtre (*filter algorithm*), lui aussi proposé par Gary L. Peterson.
 
 Cet algorithme nécessite de connaître à l'avance le nombre de threads N qui souhaitent synchroniser l'accès à leur section critique.
 Le concept fondamental est celui de *niveaux*.
 Il y a N-1 niveaux, et chacun de ces niveaux correspond à une salle d'attente.
-Plus précisément, à chaque niveau, *au moins* un thread doit pouvoir passer mais, si plusieurs threads souhaitent passer le même niveau, alors au moins un d'entre eux doit y rester bloqué.
-Le nombre de threads pouvant passer chaque niveau décroit donc strictement de 1 à chacun d'entre eux : N-1 threads peuvent passer le premier niveau, N-2 peuvent passer le deuxième niveau, et ainsi de suite jusqu'au dernier niveau, pour lequel un seul thread peut passer et ainsi accéder à sa section critique.
+Plus précisément, à chaque niveau, *au moins un* thread doit pouvoir passer mais, si plusieurs threads souhaitent passer le même niveau, alors *au moins un* d'entre eux doit y rester bloqué.
+Le nombre de threads pouvant passer chaque niveau décroit donc strictement de 1 à chacun d'entre eux : N-1 threads peuvent passer le premier niveau, N-2 peuvent passer le deuxième niveau, et ainsi de suite jusqu'au dernier niveau, pour lequel un seul (N-N-1) thread peut passer et ainsi accéder à sa section critique.
 La figure ci-dessous illustre le principe de l'algorithme du filtre.
 
 .. figure:: figures/filter_algorithm.png
@@ -252,7 +255,7 @@ La situation (2) est possible lorsque qu'un nouveau thread s'est déclaré comme
 Ces threads sont indiqués avec la lettre (V) sur la figure.
 Par exemple, le thread T1 a pu avancer dans les niveaux 3 et plus car aucun thread n'était en attente au même niveau ou à un niveau supérieur.
 Le thread T5 est lui en attente au deuxième niveau car il s'y est déclaré comme la victime (et donc a donné la priorité aux autres threads alors en attente sur ce niveau).
-L'arrivée du thread T3 à ce niveau va amener T3 à se déclarer comme victime à sa place, et permettre le progrès de T5 au niveau suivant, tandis que T3 restera bloqué.
+L'arrivée du thread T3 à ce deuxième niveau va amener T3 à se déclarer comme victime à la place de T5, et permettre le progrès de T5 au niveau suivant, tandis que T3 restera bloqué.
 De la même façon, le progrès de T3 est rendu possible par l'arrivée du thread T8 au tout premier niveau, prenant la place de T3 en tant que victime pour ce niveau.
 
 Une mise en œuvre de l'algorithme du filtre utilise deux tableaux partagés de taille N, initialisés comme suit :
@@ -268,7 +271,7 @@ Une mise en œuvre de l'algorithme du filtre utilise deux tableaux partagés de 
      level[j]=0;
    }
 
-Un thread arrivant dans un nouveau niveau commence par se déclarer comme la *victime* pour ce niveau, puis consulte les niveaux auxquels les autres threads se trouvent, en consultant les tableaux partagés.
+Un thread arrivant dans un niveau supérieur commence par se déclarer comme la *victime* pour ce niveau, puis consulte les niveaux auxquels les autres threads se trouvent, en consultant les tableaux partagés.
 Le code ci-dessous représente l'algorithme suivi par le thread *i*.
 
 .. code-block:: c
