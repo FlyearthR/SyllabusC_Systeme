@@ -27,9 +27,9 @@ Modèle d'exécution des threads et bursts CPU
 Un thread exécute ses instructions par phases, alternant entre deux types d'opérations :
 
 - Lorsqu'il obtient le processeur, un burst CPU (*rafale d'utilisation du processeur* en français) pendant lequel le processeur exécute des instructions du thread de façon continue;
-- Ce burst CPU se termine par l'utilisation d'une opération bloquante, comme une demande d'entrée/sortie ou une opération de synchronisation.
+- Ce burst CPU se termine par l'utilisation d'un appel système bloquant, comme une demande d'entrée/sortie ou une opération de synchronisation.
 
-À la suite de l'appel bloquant, le thread ne peut pas faire de progrès tant que le résultat de l'opération n'est pas disponible.
+À la suite de l'appel bloquant, le thread ne peut pas faire de progrès tant que le résultat de l'opération demandée n'est pas disponible.
 
 La longueur des burst CPUs, et la fréquence des opérations bloquantes comme les entrées/sorties, peut varier fortement d'une application à l'autre.
 Ceci est illustré par la figure suivante.
@@ -42,10 +42,10 @@ Dans cet exemple, une application de copie de fichier comme `cp(1)`_ effectue de
 Une application de calcul numérique présentera, au contraire, des bursts CPU très longs avec des entrées/sorties seulement au début et à la fin des calculs.
 
 Un application peut tout à fait être composée de plusieurs threads présentant des caractéristiques différentes.
-Par exemple, dans un jeu vidéo de simulation, le thread chargé de prendre en compte les commandes du joueur (à l'aide du clavier ou d'une manette) présentera souvent des bursts CPU courts et de longues périodes d'attente, tandis que le thread en charge de l'intelligence artificielle du jeu pourra avoir des bursts CPU périodiques mais de durée régulière.
-Enfin, le thread en charge de l'affichage pourrait utiliser des bursts CPU longs pour préparer la visualisation d'une scène suivie de sa mise au dispositif d'affichage par le principe de DMA vu en introduction.
+Par exemple, dans un jeu vidéo de simulation, le thread chargé de prendre en compte les commandes du joueur (à l'aide du clavier ou d'une manette) présentera souvent des bursts CPU courts et de longues périodes d'attente, tandis que le thread en charge de l'intelligence artificielle du jeu pourra avoir des bursts CPU périodiques de durée relativement plus importante.
+Enfin, le thread en charge de l'affichage pourrait utiliser des bursts CPU longs pour préparer la visualisation d'une scène suivie de sa mise à disposition du dispositif d'affichage.
 
-L'alternance entre les bursts CPU et les phases d'attente est mise en œuvre par l'alternance de chaque thread entre différents états, permis par le mécanisme de changement de contexte.
+L'alternance entre les bursts CPU et les phases d'attente est mise en œuvre par l'alternance de chaque thread entre différents états via le mécanisme de changement de contexte.
 
 Évolution de l'état des threads
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -67,9 +67,9 @@ Passage de l'état Running à l'état Blocked
 """"""""""""""""""""""""""""""""""""""""""
 
 Le passage de l'état Running à l'état Blocked advient lors de l'exécution d'un appel système bloquant appelé par le thread.
-Cet appel système bloquant peut être, par exemple, une demande d'entrée/sortie (écrire ou lire depuis le système de fichiers) ou un appel à une primitive de synchronisation comme par exemple `pthread_mutex_lock(3posix)`_ ou `sem_wait(3posix)`_.
+Cet appel système bloquant peut être, par exemple, une demande d'entrée/sortie (comme écrire ou lire depuis le système de fichiers) ou un appel à une primitive de synchronisation comme par exemple `pthread_mutex_lock(3posix)`_ ou `sem_wait(3posix)`_.
 Les threads en état Blocked sont associés à une structure de donnée du noyau, qui joue le rôle de *salle d'attente*.
-Certaines de ces structures d'attente n'ont d'utilité que pour un seul thread, par exemple lorsque ce thread a demandé une lecture depuis le système de fichiers.
+Certaines de ces structures d'attente n'ont d'utilité que pour un seul thread, par exemple lorsque ce thread a demandé une lecture depuis le système de fichiers (par exemple ici pour T9).
 D'autres peuvent contenir plusieurs threads en attente.
 C'est le cas, par exemple, d'une structure d'attente pour un sémaphore.
 Il peut y avoir effectivement plusieurs threads ayant appelé `sem_wait(3posix)`_ (ici T12, T4 et T10).
@@ -87,15 +87,17 @@ Un thread passe de l'état Running à l'état Ready lorsqu'il libère le process
 
 On observe qu'avec uniquement les mécanismes définis précédemment, un thread qui ne génère aucun appel système pourrait rester dans l'état Running indéfiniment.
 C'est le cas, par exemple, d'un thread bloqué dans une boucle infinie ne comportant pas d'appel à la librairie standard.
-Si tous les processeurs venaient à être bloqués par des threads dans cette situation, alors la machine devient inutilisable.
+Si tous les processeurs venaient à être bloqués par des threads dans cette situation, alors la machine deviendrait inutilisable.
 Par ailleurs, sans même considérer des boucles infinies, le temps d'occupation du processeur par le thread en cours d'exécution (son CPU burst) pourrait être particulièrement long, ce qui peut être problématique lorsque d'autres threads sont sujets à des contraintes de réactivité (par exemple, dans le jeu présenté plus haut, la réaction aux commandes utilisateurs ou la mise à jour de la visualisation).
 
 .. Un thread dans l'état Running peut tout d'abord générer volontairement un appel système bloquant pour passer en état Ready, libérant de facto le processeur qu'il utilise.
 .. Il faut utiliser pour cela la fonction `pthread_yield(3)`_ qui utilise elle même l'appel système `sched_yield(2)`_.
 .. En pratique, un thread qui doit attendre la fin de l'exécution d'autres threads et donc leur permettre d'obtenir le processeur qu'il occupe utilisera plutôt l'appel `pthread_join(3)`_ (ou `sleep(3)`_ pour attendre une durée précise).
 
-Les systèmes comme Linux utilisent donc une source d'interruption matérielle périodique (une horloge système) pour permettre de redonner le contrôle au système d'exploitation.
-À l'occasion de ces traitements d'interruption, il est possible de reprendre un processeur à un thread en état Running, en provoquant un changement de contexte.
+Les systèmes comme Linux utilisent donc une source d'interruption matérielle périodique (une horloge système) pour permettre de redonner le contrôle au système d'exploitation via la génération d'interruption matérielle à une fréquence choisie par le système d'exploitation (par exemple, 100 Hz).
+Le traitement de ces interruptions redonne le contrôle à la routine de traitement qui fait partie du noyau, qui commence par sauvegarder le contexte du thread en cours d'exécution.
+Il est alors possible pour le système d'exploitation de choisir de ne pas restaurer le contexte de ce thread lors du retour de cette routine de traitement d'interruption.
+Le thread perd donc son état Running, et rejoint les threads dans l'état Ready.
 On dit alors que le thread a subit une **préemption**.
 C'est le cas de T15 sur notre exemple.
 
@@ -109,8 +111,8 @@ Mise en œuvre du scheduler
 
 La politique d'ordonnancement, que nous appellerons par la suite uniquement de son nom anglais le *scheduler* par simplicité, est donc en charge de la prise de décision aux deux moments suivants :
 
-- (1) Lorsqu'un processeur devient disponible, suite au passage d'un thread en mode Blocked, le scheduler doit sélectionner un thread dans l'état Ready et le promouvoir à l'état Running sur ce processeur.
-- (2) Lorsqu'une interruption périodique est traité, le scheduler doit décider si un thread actuellement en état Running doit être préempté pour passer en état Ready.
+- (1) Lorsqu'un processeur devient disponible, suite au passage d'un thread en mode Blocked. Le scheduler doit alors sélectionner un thread dans l'état Ready, s'il en existe un, et le promouvoir à l'état Running sur ce processeur.
+- (2) Lorsqu'une interruption périodique est traitée, le scheduler doit décider si un thread actuellement en état Running doit être préempté pour passer en état Ready.
 
 Un scheduler qui prend des décisions pour les deux occasions (1) et (2) est dit préemptif (car il utilise la préemption d'un thread pour récupérer le processeur avant la fin de son CPU burst).
 Un scheduler qui ne prend de décision que lors de l'occasion (1) est non-préemptif.
@@ -126,9 +128,9 @@ La priorité de l'application de copie de fichier est de subir le moins d'attent
 Pour ce thread, le délai d'attente entre sa mise en état Ready et l'obtention d'un processeur doit être la plus faible possible.
 
 Pour l'application de calcul, le plus important est de pouvoir exécuter les instructions du long CPU burst avec le moins d'interruptions possibles.
-En effet, un changement de contexte est du temps perdu pour réaliser des opérations utiles (i.e., progresser dans la simulation).
+En effet, un changement de contexte est du temps perdu pour réaliser des opérations utiles (comme progresser dans la simulation).
 
-Par ailleurs, un thread qui est interrompu et replacé plus tard sur le processeur sera soumis à un phénomène de *cache froid* : les données qui étaient dans le cache, et donc accessibles avec un temps d'accès faible avant le changement de contexte, ont pu être remplacées par des données à des adresses différentes, utilisées par le thread qui a occupé le processeur entre temps.
+Par ailleurs, un thread qui est interrompu et replacé plus tard sur le processeur sera soumis à un phénomène de *cache froid* : les données qui étaient dans le cache, et donc accessibles avec un temps d'accès faible avant le changement de contexte, ont pu être remplacées par des données à des adresses différentes, utilisées par le thread qui a occupé le processeur entretemps.
 Peupler de nouveau le cache avec les données nécessaire au calcul peut nécessiter de coûteux accès en mémoire principale et ralentir l'exécution.
 
 Si l'on décide de privilégier l'application de copie, il est souhaitable d'interrompre le thread de l'application de calcul, mais cela va être au détriment de ce dernier.
@@ -140,13 +142,13 @@ On peut définir cinq principaux critères pour mesurer la performance d'un sche
  - On veut pouvoir maximiser l'utilisation du ou des processeur(s), c'est à dire la proportion du temps où ceux-ci exécutent des instructions des applications. Les opérations de changement de contexte ne sont évidemment pas considérées comme du travail utile pour ce critère.
  - On peut vouloir maximiser le débit applicatif, c'est à dire le nombre de processus qui peuvent terminer leur exécution en une unité de temps donné (par exemple en une heure).
 - D'autres critères sont applicables, cette fois-ci **du point de vue de chaque application** individuellement. On pourra par ailleurs s'intéresser à la distribution de ces métriques pour l'ensemble des applications, afin de savoir s'il existe un déséquilibre entre la métrique telle que perçue par une application et la même métrique perçue par une autre application :
- - Une application peut souhaiter minimiser son temps total d'exécution, entre la création du processus et sa terminaison. Ce critère n'est pas nécessairement valide pour tous les types d'applications, par exemple il n'a que peu de sens pour une application interactive (par exemple, un shell), mais il est important pour des applications de calcul ou l'exécution d'un script par exemple.
+ - Une application peut souhaiter minimiser son temps total d'exécution, entre la création du processus et sa terminaison. Ce critère n'est pas nécessairement valide pour tous les types d'applications, par exemple il n'a que peu de sens pour une application interactive (par exemple, un shell), mais il est important pour des applications de calcul ou l'exécution d'un script.
  - Ensuite, une application peut souhaiter minimiser le temps d'attente moyen, c'est à dire le temps écoulé entre la mise en état Ready (par exemple après la fin d'une entrée/sortie) et l'obtention d'un processeur. Cette métrique est particulièrement importante pour les applications interactives, comme un jeu ou une interface graphique.
- - Enfin, une application voudra minimiser son temps de réponse, qui correspond à la somme entre le temps d'attente et le temps nécessaire pour terminer l'exécution de son burst CPU.
+ - Enfin, une application voudra minimiser son temps de réponse, qui correspond à la somme entre le temps d'attente et le temps nécessaire pour terminer l'exécution du burst CPU qui suit immédiatement après.
 
 Nous allons dans la suite de ce chapitre décrire plusieurs scheduler classiques, en commençant par les scheduler non préemptifs, puis les schedulers préemptifs, et enfin les schedulers hybrides combinant plusieurs stratégies.
 
-**Note :** Nous considérerons pour la présentation des schedulers uniquement le cas d'un seul processeur pour des raisons de simplicité, mais les algorithmes présentés ici peuvent être aisément étendu pour fonctionner avec plusieurs processeurs.
+**Note :** Nous considérerons pour la présentation des schedulers uniquement le cas d'un seul processeur pour des raisons de simplicité, mais les algorithmes présentés ici peuvent être aisément étendus pour fonctionner avec plusieurs processeurs.
 
 Le scheduler FCFS (First-Come-First-Serve)
 """"""""""""""""""""""""""""""""""""""""""
