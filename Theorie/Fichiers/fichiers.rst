@@ -137,15 +137,15 @@ L'opération de lister le contenu d'un répertoire (avec la commande `ls(1)`_ pa
 
  L'appel système `chmod(2)`_ permet de modifier les bits de permission qui sont associés à un fichier. Ceux-ci sont encodés sous la forme d'un entier sur 16 bits.
 
-  - ``S_IRUSR (0x0400)`` : permission de lecture par le propriétaire
-  - ``S_IWUSR (0x0200)`` : permission d'écriture par le propriétaire
-  - ``S_IXUSR (0x0100)`` : permission d'exécution par le propriétaire
-  - ``S_IRGRP (0x0040)`` : permission de lecture par le groupe hormis le propriétaire
-  - ``S_IWGRP (0x0020)`` : permission d'écriture par le groupe hormis le propriétaire
-  - ``S_IXGRP (0x0010)`` : permission d'exécution par le groupe hormis le propriétaire
-  - ``S_IROTH (0x0004)`` : permission de lecture par tout utilisateur hormis le propriétaire et son groupe
-  - ``S_IWOTH (0x0002)`` : permission d'écriture par tout utilisateur hormis le propriétaire et son groupe
-  - ``S_IXOTH (0x0001)`` : permission d'exécution par tout utilisateur hormis le propriétaire et son groupe
+  - ``S_IRUSR (00400)`` : permission de lecture par le propriétaire
+  - ``S_IWUSR (00200)`` : permission d'écriture par le propriétaire
+  - ``S_IXUSR (00100)`` : permission d'exécution par le propriétaire
+  - ``S_IRGRP (00040)`` : permission de lecture par le groupe hormis le propriétaire
+  - ``S_IWGRP (00020)`` : permission d'écriture par le groupe hormis le propriétaire
+  - ``S_IXGRP (00010)`` : permission d'exécution par le groupe hormis le propriétaire
+  - ``S_IROTH (00004)`` : permission de lecture par tout utilisateur hormis le propriétaire et son groupe
+  - ``S_IWOTH (00002)`` : permission d'écriture par tout utilisateur hormis le propriétaire et son groupe
+  - ``S_IXOTH (00001)`` : permission d'exécution par tout utilisateur hormis le propriétaire et son groupe
 
   .. code-block:: c
 
@@ -154,7 +154,7 @@ L'opération de lister le contenu d'un répertoire (avec la commande `ls(1)`_ pa
 
  Ces bits de permissions sont généralement spécifiés soit sous la forme d'une disjonction logique ou sous forme numérique. A titre d'exemple, un fichier qui peut être lu et écrit uniquement par son propriétaire aura comme permissions ``00600`` ou ``S_IRUSR|S_IWUSR``.
 
- Les 12 bits de poids faibles sont utilisés pour les permissions de lecture, écriture et exécution. Les 4 bits supplémentaires de poids fort servent à encoder des permissions particulières relatives aux fichiers et répertoires. Par exemple, lorsque la permission ``S_ISUID (0x4000)`` est associée à un exécutable, elle indique que celui-ci doit s'exécuter avec les permissions du propriétaire de l'exécutable et pas les permissions de l'utilisateur. Cette permission spéciale est utilisée par des programmes comme `passwd(1)`_ qui doivent disposer des permissions de l'administrateur système pour s'exécuter correctement (`passwd(1)`_ doit modifier le fichier `passwd(5)`_ qui appartient à l'administrateur système).
+ Les 12 bits de poids faibles sont utilisés pour les permissions de lecture, écriture et exécution. Les 4 bits supplémentaires de poids fort servent à encoder des permissions particulières relatives aux fichiers et répertoires. Par exemple, lorsque la permission ``S_ISUID (04000)`` est associée à un exécutable, elle indique que celui-ci doit s'exécuter avec les permissions du propriétaire de l'exécutable et pas les permissions de l'utilisateur. Cette permission spéciale est utilisée par des programmes comme `passwd(1)`_ qui doivent disposer des permissions de l'administrateur système pour s'exécuter correctement (`passwd(1)`_ doit modifier le fichier `passwd(5)`_ qui appartient à l'administrateur système).
 
 
 Les exemples ci-dessous présentent le contenu partiel d'un répertoire.
